@@ -1,0 +1,24 @@
+jenkins:
+  authorizationStrategy: "cloudBeesRoleBasedAccessControl"
+  securityRealm:
+    local:
+      allowsSignup: false
+      enableCaptcha: false
+notificationConfiguration:
+  enabled: true
+  router: "operationsCenter"
+security:
+  anonymizeSupportBundle:
+    enabled: false
+  apiToken:
+    creationOfLegacyTokenEnabled: false
+    tokenGenerationOnCreationEnabled: false
+    usageStatisticsEnabled: true
+  sSHD:
+    port: -1
+  securitySettingsEnforcement:
+    global:
+      realmAndAuthorization:
+        canCustomMapping: false
+        canOverride: true
+        defaultMappingFactory: "restrictedEquivalentRAMF"

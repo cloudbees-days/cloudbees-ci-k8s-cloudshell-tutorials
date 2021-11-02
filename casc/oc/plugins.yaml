@@ -1,0 +1,5 @@
+plugins:
+- {id: cloudbees-casc-api}
+- {id: external-notification}
+- {id: operations-center-notification}
+- {id: operations-center-rbac}

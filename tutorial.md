@@ -2,7 +2,7 @@
 
 ## GKE Cluster Availability Types
 
-Having already decided to create a cluster using the Standard mode (instead of Autopilot), we must next decide what type of availability we want for our cluster. GKE supports zonal and regional clusters. 
+Having already decided to create a cluster using the Standard mode (instead of Autopilot), we must next decide what type of availability we want for our cluster. GKE supports zonal and regional availability for clusters. 
 
 - A zonal cluster allows running nodes in single or multiple zones, but only provides a single replica of the control plane running in a single zone.
 - A regional cluster allows running nodes in multiple zone, but also provides multiple replicas of the control plane running in multiple zones.
