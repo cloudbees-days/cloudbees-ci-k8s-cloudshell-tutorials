@@ -33,7 +33,7 @@ gcloud container --project "REPLACE_GCP_PROJECT" clusters create "REPLACE_GITHUB
 ```
 
 The flags we are setting are:
-- `--region` - This is required to create a regional GKE cluster. To create a zonal cluster you would use the `--zone` flag. The value is set to `us-east` to comply with CloudBees Ops rules.
+- `--region` - This is required to create a regional GKE cluster. To create a zonal cluster you would use the `--zone` flag. The value is set to `us-east1` to comply with CloudBees Ops rules.
 - `--node-locations` - Specifies the zone(s) where the worker nodes will run. If not specified then they are spread across 3 random zones withing the cluster region (for regional clusters). We have specified two zones for use with GCP regional persistent disks that only support two zones.
 - `--cluster-version` and `--release-channel` - We have specified this flag as we would like to use a non-default GKE version from the **regular** release channel. By using a version later than 1.21.0-gke.1500 we pick up a number of changes to the default values for flags to include using VPC-native as the default network mode.
 - `--machine-type` - The default machine type is an **e2-medium** that has not been as stable for running CloudBees CI workloads as the **n1** machines have been.
@@ -50,7 +50,7 @@ gcloud container clusters "REPLACE_GITHUB_USER" \
     --autoscaling-profile optimize-utilization
 ```
 
-## Configure Cluster Maintenance Window
+### Configure Cluster Maintenance Window
 
 
 ```bsh
