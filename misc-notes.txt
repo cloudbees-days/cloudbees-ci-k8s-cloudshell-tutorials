@@ -1,0 +1,86 @@
+gcloud beta container --project "core-workshop" clusters create-auto "cbci-green-autopilot" --region "us-east1" \
+  --release-channel "regular" --network "projects/core-workshop/global/networks/default" --subnetwork "projects/core-workshop/regions/us-east1/subnetworks/default" \
+  --cluster-version "1.21.3-gke.2001" --service-account "gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com"
+
+gcloud beta container --project "core-workshop" clusters create "cbci-workshop-green" \
+  --region "us-east1" --no-enable-basic-auth --cluster-version "1.21.3-gke.2001" --release-channel "regular" \
+  --machine-type "n1-standard-4" --image-type "COS_CONTAINERD" --disk-type "pd-ssd" --disk-size "50" \
+  --service-account "gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com" \
+  --enable-autoscaling --min-nodes "0" --max-nodes "30" \
+  --addons HorizontalPodAutoscaling,HttpLoadBalancing,GcePersistentDiskCsiDriver \
+  --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 \
+  --maintenance-window-start "2020-08-10T04:00:00Z" --maintenance-window-end "2020-08-11T04:00:00Z" --maintenance-window-recurrence "FREQ=WEEKLY;BYDAY=SA,SU" \
+  --autoscaling-profile optimize-utilization --workload-pool "core-workshop.svc.id.goog" --node-locations "us-east1-b","us-east1-c"
+
+# get nodes with region and zone info
+kubectl get nodes --label-columns failure-domain.beta.kubernetes.io/region,failure-domain.beta.kubernetes.io/zone
+
+### Only for new installs
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add jetstack https://charts.jetstack.io
+helm repo add smee-server https://cloudbees-days.github.io/smee.io/
+#helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+
+
+### For new and updates
+helm repo update
+
+helm upgrade --install --wait ingress-nginx ingress-nginx/ingress-nginx \
+    -n ingress-nginx --create-namespace \
+    -f ./helm/ingress-nginx.yml
+
+helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
+  --version v1.5.4 \
+  --set global.leaderElection.namespace=cert-manager  --set prometheus.enabled=false \
+  --set installCRDs=true --wait
+
+
+kubectl apply -f ./k8s/cluster-issuers.yml
+
+helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system
+
+kubectl apply -f secrets-store-csi-driver-provider-gcp/deploy/provider-gcp-plugin.yaml
+kubectl apply -f ./k8s/cbci-ops-secret-provider.yml
+
+
+PROJECT_ID=core-workshop
+DNS_ZONE=workshop-cb-sa
+#get ingress-nginx lb ip
+INGRESS_IP=$(kubectl get services -n ingress-nginx | grep LoadBalancer  | awk '{print $4}')
+
+CBCI_HOSTNAME=staging-cbci.workshop.cb-sa.io
+
+gcloud beta dns --project=$PROJECT_ID record-sets update $CBCI_HOSTNAME. \
+    --rrdatas=$INGRESS_IP \
+    --ttl=300 \
+    --type=A \
+    --zone=$DNS_ZONE
+
+### Need for CloudBees CI
+kubectl create ns cbci
+
+kubectl apply -f ./k8s/cbci-cjoc-extra-role.yml
+kubectl apply -f ./k8s/cbci-jenkins-sa.yml
+
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:core-workshop.svc.id.goog[cbci/jenkins]" \
+  core-cloud-run@core-workshop.iam.gserviceaccount.com
+
+kubectl -n cbci create configmap cbci-oc-init-groovy --from-file=init_groovy/ --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n cbci create configmap cbci-oc-quickstart-groovy --from-file=groovy-quickstart/ --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -f ./k8s/regional-pd-ssd-sc.yml
+
+# won't work with GKE Auotpilot: kubectl apply -f ./k8s/cbci-ops-secret-provider.yml
+
+kubectl -n cbci create configmap oc-casc-bundle --from-file=casc/oc --dry-run=client -o yaml | kubectl apply -f -
+CBCI_HOSTNAME=staging-cbci.workshop.cb-sa.io
+helm upgrade --install --wait cbci cloudbees/cloudbees-core \
+  --set OperationsCenter.HostName=$CBCI_HOSTNAME \
+  --namespace='cbci'  --create-namespace \
+  --set-file 'OperationsCenter.ExtraGroovyConfiguration.z-quickstart-hook\.groovy'=./groovy-license-activated/z-quickstart-hook.groovy \
+  --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
+  --values ./helm/green-cbci.yml
+
+
+kubectl cp --namespace cbci casc/ops cjoc-0:/var/jenkins_home/jcasc-bundles-store/
