@@ -4,6 +4,8 @@
 
 In this tutorial you will create a GKE cluster and then install CloudBees CI on that cluster.
 
+<walkthrough-tutorial-duration duration="100"></walkthrough-tutorial-duration>
+
 ## Create GKE Cluster
 
 ### GKE Cluster Availability Types
@@ -17,7 +19,7 @@ We will be creating a regional cluster to better simulate a production environme
 
 ### Use the glcoud CLI to create a regional cluster
 
-There are over 100 different flags available for the `clusters create` command and we are only specifying 10.
+There are over 100 different flags available for the `clusters create` command and we are only specifying 10. Click on the <walkthrough-cloud-shell-icon></walkthrough-cloud-shell-icon> button for the `gloud` CLI command listed below to copy the command into your cloudshell console and then run that command.
 
 ```bsh
 gcloud container --project "REPLACE_GCP_PROJECT" clusters create "REPLACE_GITHUB_USER" \
@@ -30,6 +32,7 @@ gcloud container --project "REPLACE_GCP_PROJECT" clusters create "REPLACE_GITHUB
     --enable-autoscaling --min-nodes "1" --max-nodes "4"
 ```
 
+The flags we are setting are:
 - `--region` - This is required to create a regional GKE cluster. To create a zonal cluster you would use the `--zone` flag. The value is set to `us-east` to comply with CloudBees Ops rules.
 - `--node-locations` - Specifies the zone(s) where the worker nodes will run. If not specified then they are spread across 3 random zones withing the cluster region (for regional clusters). We have specified two zones for use with GCP regional persistent disks that only support two zones.
 - `--cluster-version` and `--release-channel` - We have specified this flag as we would like to use a non-default GKE version from the **regular** release channel. By using a version later than 1.21.0-gke.1500 we pick up a number of changes to the default values for flags to include using VPC-native as the default network mode.
@@ -61,4 +64,4 @@ gcloud container clusters update "REPLACE_GITHUB_USER" \
 
 If you click on the link below you will see that `regional-pd-ssd-csi-storageclass` has been specified as the storage class to use for your CloudBees CI cluster.
 
-<walkthrough-editor-open-file filePath="cloudshell_open/cloudbees-ci-k8s-cloudshell-tutorials-0/helm/cbci-values.yml">CBCI helm values</walkthrough-editor-open-file>
+<walkthrough-editor-open-file filePath="helm/cbci-values.yml">CBCI helm values</walkthrough-editor-open-file>
