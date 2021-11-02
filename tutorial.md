@@ -55,4 +55,4 @@ gcloud container clusters update "REPLACE_GITHUB_USER" \
 
 If you click on the link below you will see that `regional-pd-ssd-csi-storageclass` has been specified as the storage class to use for your CloudBees CI cluster.
 
-<walkthrough-editor-select-line filePath="helm/cbci-values.yml" startLine="268" endLine="268">CloudBees CI StorageClass</walkthrough-editor-select-line>
+<walkthrough-editor-select-line filePath="cloudbees-ci-k8s-cloudshell-tutorials/helm/cbci-values.yml" startLine="268" endLine="268">CloudBees CI StorageClass</walkthrough-editor-select-line>
