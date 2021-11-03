@@ -205,10 +205,6 @@ OperationsCenter:
     configMap:
       name: cbci-oc-init-groovy
       defaultMode: 420
-  - name: quickstart-groovy
-    configMap:
-      name: cbci-oc-quickstart-groovy
-      defaultMode: 420
   # ExtraVolumes:
   # - name: my-volume
   #   configMap:
@@ -218,9 +214,6 @@ OperationsCenter:
   ExtraVolumeMounts:
   - name: init-groovy
     mountPath: /var/jenkins_config/init.groovy.d
-    readOnly: true
-  - name: quickstart-groovy
-    mountPath: /var/jenkins_home/quickstart.groovy.d
     readOnly: true
   # ExtraVolumeMounts:
   # - name: my-volume

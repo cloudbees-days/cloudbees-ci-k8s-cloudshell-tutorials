@@ -135,3 +135,6 @@ Use `kubectl` to install the `regional-pd-ssd` `SC` into your cluster:
 kubectl apply -f k8s/regional-pd-ssd.yml
 ```
 
+## Install CloudBees CI
+
+As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI.
