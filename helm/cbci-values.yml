@@ -68,22 +68,22 @@ OperationsCenter:
     Limits:
       # OperationsCenter.Resources.Limits.Cpu -- CPU limit to run Operations Center
       # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-cpu
-      Cpu: 4
+      Cpu: 2
       # OperationsCenter.Resources.Limits.Memory -- Memory limit to run Operations Center
       # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-memory
-      Memory: 8G
+      Memory: 6G
     Requests:
       # OperationsCenter.Resources.Requests.Cpu -- CPU request to run Operations Center
       # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-cpu
       Cpu: 2
       # OperationsCenter.Resources.Requests.Memory -- Memory request to run Operations Center
       # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-memory
-      Memory: 6G
+      Memory: 4G
 
   # Environment variables that get added to the container (useful for e.g. http_proxy)
-  # ContainerEnv:
-  #   - name: http_proxy
-  #     value: "http://192.168.64.1:3128"
+  ContainerEnv:
+  - name: "SECRETS"
+    value: "/var/jenkins_home/jcasc_secrets"
 
   # OperationsCenter.JavaOpts -- Additional java options to pass to the Operations Center
   JavaOpts: >-
@@ -209,10 +209,12 @@ OperationsCenter:
     configMap:
       name: cbci-oc-quickstart-groovy
       defaultMode: 420
-  # ExtraVolumes:
-  # - name: my-volume
-  #   configMap:
-  #     name: my-config-map
+  - name: "jcasc-secrets"
+    csi:
+      driver: secrets-store.csi.k8s.io
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: "cbci-cjoc-secret-provider"
 
   # OperationsCenter.ExtraVolumeMounts -- Extra volume mounts to add to the container containing Operations Center
   ExtraVolumeMounts:
@@ -222,10 +224,9 @@ OperationsCenter:
   - name: quickstart-groovy
     mountPath: /var/jenkins_home/quickstart.groovy.d
     readOnly: true
-  # ExtraVolumeMounts:
-  # - name: my-volume
-  #   mountPath: /var/my-path
-  #   readOnly: true
+  - name: "jcasc-secrets"
+    mountPath: "/var/jenkins_home/jcasc_secrets"
+    readOnly: true
 
 # Master options
 Master:
