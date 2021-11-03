@@ -47,8 +47,11 @@ PROJECT_ID=core-workshop
 DNS_ZONE=workshop-cb-sa
 #get ingress-nginx lb ip
 INGRESS_IP=$(kubectl get services -n ingress-nginx | grep LoadBalancer  | awk '{print $4}')
-
 CBCI_HOSTNAME=staging-cbci.workshop.cb-sa.io
+
+gcloud dns --project=$PROJECT_ID record-sets transaction start --zone=$DNS_ZONE
+gcloud dns --project=$PROJECT_ID record-sets transaction add $INGRESS_IP --name=$CBCI_HOSTNAME. --ttl=300 --type=A --zone=$DNS_ZONE
+gcloud dns --project=$PROJECT_ID record-sets transaction execute --zone=$DNS_ZONE
 
 gcloud beta dns --project=$PROJECT_ID record-sets update $CBCI_HOSTNAME. \
     --rrdatas=$INGRESS_IP \
@@ -84,3 +87,14 @@ helm upgrade --install --wait cbci cloudbees/cloudbees-core \
 
 
 kubectl cp --namespace cbci casc/ops cjoc-0:/var/jenkins_home/jcasc-bundles-store/
+
+
+### Configure Cluster Maintenance Window
+
+
+```bsh
+gcloud container clusters update "REPLACE_GITHUB_USER" \
+    --maintenance-window-start "2020-08-10T04:00:00Z" \
+    --maintenance-window-end "2020-08-11T04:00:00Z" \
+    --maintenance-window-recurrence "FREQ=WEEKLY;BYDAY=SA,SU"
+```

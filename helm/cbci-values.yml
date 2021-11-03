@@ -265,7 +265,7 @@ Persistence:
   # SSD drives will be created by this chart and used automatically.
   #
   # StorageClass: "-"
-  StorageClass: regional-pd-ssd-csi-storageclass
+  StorageClass: regional-pd-ssd
 
   # Persistence.Annotations -- Annotations to put on the PVC
   Annotations: {}
