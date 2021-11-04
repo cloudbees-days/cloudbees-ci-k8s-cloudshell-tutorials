@@ -237,4 +237,8 @@ Run the following command to check that the `cbci-oc-init-groovy` `ConfigMap` wa
 kubectl -n cbci exec cjoc-0 -- more /var/jenkins_config/init.groovy.d/09-license-activate.groovy
 ```
 
+## Integrating GCP Services via Workload Identity
+
+Sometimes you need to integrate other GCP services with CloudBees CI controllers and/or agents. Workload Identity for GKE allows us to bind GCP IAM Service Accounts (GSA) to Kubernetes Service Accounts (KSA) in a specific Kubernetes Namespace.
+
 
