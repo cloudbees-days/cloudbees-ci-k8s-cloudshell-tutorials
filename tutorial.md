@@ -141,8 +141,13 @@ When creating a GKE cluster, several `StorageClasses` (cluster wide resources) a
 ```bsh
 kubectl get sc
 ```
+Next, take deeper look at the provided `premium-rwo StorageClass` by running the following command:
+```bsh
+kubectl describe sc premium-rwo
+```
+Note, that the `Parameters` include `type=pd-ssd` which is the faster type of disk we want to use, but it is not regional.
 
-But we have created a regional cluster, across two zones. If we used one of the provided `StorageClasses` (`SC`), then a managed controller would not be able to failover to the other zone because a regular persistent disk is zone specific. So we will need to create a custom `StorageClass` that uses GCP regional persistent disks.
+We have created a regional cluster, across two zones. If we used one of the provided `StorageClasses` (`SC`), then a managed controller would not be able to failover to the other zone because a regular persistent disk is zone specific. So we will need to create a custom `StorageClass` that uses GCP regional persistent disks.
 
 First, lets take a look at the manifest for our custom `StorageClass`. Click <walkthrough-editor-open-file filePath="k8s/regional-pd-ssd-sc.yml">`k8s/regional-pd-ssd-sc.yml`</walkthrough-editor-open-file>.
 
@@ -161,7 +166,7 @@ Finally, run the following command to make sure the new `StorageClass` was creat
 ```bsh
 kubectl describe sc regional-pd-ssd
 ```
-Note that the `Parameters` include `replication-type=regional-pd` and the `AllowedTopologies:` zones includes `[us-east1-b, us-east1-c]`.
+Note that the `Parameters` include `replication-type=regional-pd` and the `AllowedTopologies:` zones includes `[us-east1-b, us-east1-c]`; the same zones we specified for the worker nodes or our clusters.
 
 ## Configure DNS for CloudBees CI
 
