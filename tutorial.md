@@ -33,7 +33,7 @@ gcloud container clusters create "REPLACE_GITHUB_USER" \
     --enable-autoscaling --min-nodes "1" --max-nodes "4" \
     --autoscaling-profile optimize-utilization
 ```
-
+>**NOTE:** GKE cluster creation may take as long as 10 minutes or more, so we will take that time to review all of the parameters that we set above.
 The flags we are setting are:
 - `--region` - This is required to create a regional GKE cluster. To create a zonal cluster you would use the `--zone` flag. The value is set to `us-east1` to comply with CloudBees Ops rules.
 - `--node-locations` - Specifies the zone(s) where the worker nodes will run. If not specified then they are spread across 3 random zones withing the cluster region (for regional clusters). We have specified two zones for use with GCP regional persistent disks that only support two zones.
