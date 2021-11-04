@@ -188,7 +188,7 @@ ping REPLACE_GITHUB_USER.workshop.cb-sa.io
 
 As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI (and the `--set` parameter, but more about that ahead). Before we run the `helm` command to install CloudBees CI, let's take a look at the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">values file</walkthrough-editor-open-file>. Some things to note include:
 - **`dockerImage`:** on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified in the `gcloud` command to create our GKE clusters has the necessary permissions.
-- **`CasC`:** line 38; it is `enabled` and the `ConfigMapName` is set to `oc-casc-bundle`.
+- **`CasC`:** line 38; it is `enabled` and the `ConfigMapName` is set to `oc-casc-bundle`. We will create that `ConfigMap` Kubernetes resource below before we install CloudBees CI.
 - **`Protocol`:** line 61, it is set to `https` - thank you cert-manager.
 - **`JavaOpts`:** line 89 
     - controller provisioning has been configure to delete persistent storage when a managed controller is deleted
