@@ -155,6 +155,7 @@ Some things to note are:
 - **`provisioner`:** the `SC` is using the `pd.csi.storage.gke.io` provisioner. The GKE *containers storage interface* driver is required for using regional persistent disk.
 - **`parameters/type`:** the type is `pd-ssd` which is backed by fast SSD persistent disks, and faster disk results in better performance for CloudBees CI.
 - **`parameters/replication-type`:** `regional-pd` must be specified here to use regional persistent disk.
+- **`volumeBindingMode: Immediate`:** the `Immediate` mode indicates that volume binding and dynamic provisioning occurs once the `PersistentVolumeClaim` is created. Whereas the `WaitForFirstConsumer` mode delays the binding and provisioning of a `PersistentVolume` until a `Pod` using the `PersistentVolumeClaim` is created. If we weren't using GCP regional persistent disk, we would have to use `WaitForFirstConsumer` mode to ensure the persistent disk is created in the same zone as the controller `Pod`.
 - **`allowedTopologies`:** the `values` for the `topology.gke.io/zone` `key` must be set to match the zones where we deployed the GKE cluster nodes.
 
 Use `kubectl` to install the `regional-pd-ssd` `SC` into your cluster:
