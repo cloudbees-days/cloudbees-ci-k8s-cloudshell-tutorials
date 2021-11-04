@@ -205,7 +205,7 @@ As mentioned earlier, we will be using a file to specify the chart values to ove
     - the `ManagePermission` and `SystemReadPermission` permissions have been enabled (without a plugin)
 - **`Ingress`:** line 159
     - the `Class` is set to `nginx` to use the ingress-nginx controller we installed earlier
-    - the `cert-manager.io/cluster-issuer` is set to `letsencrypt-prod`; this will trigger the cert-manager add-on we install to create a TLS certificate for our CloudBees CI `Ingress`
+    - the `cert-manager.io/cluster-issuer` annotation is set to `letsencrypt-prod`; this will trigger the cert-manager add-on we install to create a TLS certificate for our CloudBees CI `Ingress`
     - under `tls`, `Enable` is set to `true` and note the `SecretName` of `cbci-tls` - this will be the name of the Kubernetes `Secret` that the cert-manager creates with the TLS certificate it retrieves from Let's Encrypt
 - **`ExtraVolumes`:** line 201, specifies the Kubernetes `ConfigMap` `cbci-oc-init-groovy` to be mounted to the Operations Center `Pod`
 - **`ExtraVolumeMounts`:** line 212, specified where to mount the `ExtraVolumes`

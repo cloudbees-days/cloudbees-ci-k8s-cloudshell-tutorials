@@ -10,7 +10,7 @@ parameters:
   #replication-type is one of none or regional-pd, defaults to none (zonal PD)
   replication-type: regional-pd
 reclaimPolicy: Delete
-volumeBindingMode: WaitForFirstConsumer
+volumeBindingMode: Immediate
 allowedTopologies:
 - matchLabelExpressions:
   - key: topology.gke.io/zone
