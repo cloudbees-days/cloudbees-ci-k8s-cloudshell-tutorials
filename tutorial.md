@@ -192,7 +192,7 @@ As mentioned earlier, we will be using a file to specify the chart values to ove
 - **`Protocol`:** line 61, it is set to `https` - thank you cert-manager.
 - **`JavaOpts`:** line 89 
     - controller provisioning has been configure to delete persistent storage when a managed controller is deleted
-    - the Jenkins setup wizard has been disable
+    - the Jenkins setup wizard has been disabled because we don't need it since we are using CasC
     - the `ManagePermission` and `SystemReadPermission` permissions have been enabled (without a plugin)
 - **`Ingress`:** line 159
     - the `Class` is set to `nginx` to use the ingress-nginx controller we installed earlier
