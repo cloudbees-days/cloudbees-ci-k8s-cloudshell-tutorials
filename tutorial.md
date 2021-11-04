@@ -13,9 +13,9 @@ In this tutorial you will create a GKE cluster and then install CloudBees CI on 
 Having already decided to create a cluster using the Standard mode (instead of Autopilot), we must next decide what type of availability we want for our cluster. GKE supports zonal and regional availability for clusters. 
 
 - A zonal cluster allows running nodes in single or multiple zones, but only provides a single replica of the control plane running in a single zone.
-- A regional cluster allows running nodes in multiple zone, but also provides multiple replicas of the control plane running in multiple zones.
+- A regional cluster allows running nodes in multiple zones, but also provides multiple replicas of the control plane running in multiple zones.
 
-We will be creating a regional cluster to better simulate a production environment and learn some of the GCP/GKE specific features.
+We will be creating a regional cluster to better simulate a production environment and learn some of the GCP/GKE specific features we need to leverage for CloudBees CI.
 
 ### Use the glcoud CLI to create a regional cluster
 
@@ -24,7 +24,7 @@ There are over 100 different flags available for the `clusters create` command a
 gcloud container --project "REPLACE_GCP_PROJECT" clusters create "REPLACE_GITHUB_USER" \
     --region "us-east1" \
     --node-locations "us-east1-b","us-east1-c" \
-    --cluster-version "1.21.3-gke.2001" --release-channel "regular" \
+    --cluster-version "1.21.5-gke.1302" --release-channel "regular" \
     --machine-type "n1-standard-4" \
     --disk-type "pd-ssd" --disk-size "50" \
     --service-account "gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com" \
@@ -157,7 +157,7 @@ gcloud dns --project=$PROJECT_ID record-sets transaction execute --zone=$DNS_ZON
 ## Install CloudBees CI
 
 As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI (and the `--set` parameter, but more about that ahead). Before we run the `helm` command to install CloudBees CI, let's take a look at the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">values file</walkthrough-editor-open-file>. Some things to note include:
-- `dockerImage`: on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified the `gcloud` command to create our GKE clusters.
+- `dockerImage`: on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified the `gcloud` command to create our GKE clusters has the necessary permissions.
 - `CasC`: line 38; it is `enabled` and the `ConfigMapName` is set to `oc-casc-bundle`.
 - `Protocol`: line 61, it is set to `https` - thank you cert-manager.
 - `JavaOpts`: line 89 
@@ -202,6 +202,9 @@ helm upgrade --install --wait cbci cloudbees/cloudbees-core \
 - We set the `CBCI_HOSTNAME` environment variable to use in the `helm` command to install CloudBees CI.
 - Finally, we use the `helm upgrade` command with the `--install` flag. Also note, that we are use a combination of `--set` parameters along with the `--values` parameter to override default values for our install.
 
-Once the install completes, there
+Run the following command to check that the `cbci-oc-init-groovy` `ConfigMap` was created in the `/var/jenkins_config/init.groovy.d/` directory of the `cjoc` container:
+```bsh
+kubectl -n cbci exec cjoc-0 -- more /var/jenkins_config/init.groovy.d/09-license-activate.groovy
+```
 
 
