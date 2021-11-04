@@ -113,9 +113,10 @@ helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manag
 ```
 - **`--set`:** The various `--set` parameters are used to override the default values of different variables in the helm chart. You may also pass those values as a yaml file with the `--values` or `-f` parameters as we will see with CloudBees CI. The **`installCRDs=true`** value installs the cert-manager **CustomResourceDefinitions** (Kubernetes objects that allow you to extend Kubernetes with custom features) that we will interact with next.
 
-Run the following command to check the install:
+Run the following command to check the custom CRDs were installed and the cert-manager pods are running:
 ```bsh
 kubectl get pods --namespace cert-manager
+kubectl api-resources | grep cert-manager.io/v1 
 ```
 
 #### Create a cert-manager `Issuer` for CloudBees CI
