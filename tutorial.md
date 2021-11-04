@@ -21,7 +21,8 @@ We will be creating a regional cluster to better simulate a production environme
 
 There are over 100 different flags available for the `clusters create` command and we are only specifying 10. Click on the <walkthrough-cloud-shell-icon></walkthrough-cloud-shell-icon> button for the `gloud` CLI command listed below to copy the command into your cloudshell console and then run that command.
 ```bsh
-gcloud container --project "REPLACE_GCP_PROJECT" clusters create "REPLACE_GITHUB_USER" \
+gcloud config set project "REPLACE_GCP_PROJECT"
+gcloud container clusters create "REPLACE_GITHUB_USER" \
     --region "us-east1" \
     --num-nodes=2 \
     --node-locations "us-east1-b","us-east1-c" \
@@ -29,7 +30,8 @@ gcloud container --project "REPLACE_GCP_PROJECT" clusters create "REPLACE_GITHUB
     --machine-type "n1-standard-4" \
     --disk-type "pd-ssd" --disk-size "50" \
     --service-account "gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com" \
-    --enable-autoscaling --min-nodes "1" --max-nodes "4"
+    --enable-autoscaling --min-nodes "1" --max-nodes "4" \
+    --autoscaling-profile optimize-utilization
 ```
 
 The flags we are setting are:
@@ -40,6 +42,9 @@ The flags we are setting are:
 - `--disk-type` and `--disk-size` - The defaults are too large (100gb) and too slow.
 - `--service-account` - Required to pull the pre-release container images we are using for CloudBees CI from an Ops managed GCR.
 - `--enable-autoscaling` - Autoscaling is not enabled by default and is very easy to enable on GKE via this flag. For AWS EKS you must manually configure and install the Kubernetes Cluster Autoscaler. 
+- `--autoscaling-profile optimize-utilization` - Autoscaling profiles allow you to specify the utilization of available resources for a GKE cluster. The default autoscaling profile is `balanced` and optimizes for minimizing provisioning time to include taking longer to deprovision nodes that no longer have pods that can be evicted. The `optimize-utilization` profile configures the cluster autoscaler to scale down the cluster more aggressively: it can remove more nodes, and remove nodes faster. It also configures GKE to prefer to schedule Pods in nodes that already have high utilization, helping the cluster autoscaler to identify and remove underutilized nodes. This profile will result in better results with the CloudBees CI hibernation feature.
+
+>NOTE: CloudBees CI managed controllers are configured with meta-data that does not allow them to be evicted from a node that may otherwise be able to be removed by the Cluster Autoscaler if moved to another node with capacity.
 
 Once the cluster creation completes, run the following command to see where your nodes are running:
 ```bsh
@@ -49,20 +54,6 @@ kubectl get nodes --label-columns failure-domain.beta.kubernetes.io/region,failu
 It should be no surprise that all the nodes are running in either the `us-east1-b` zone or the `us-east1-c` zone, as specified in the `clusters create` command.
 
 Also, you may wonder how the `kubectl` CLI was able to interact with your cluster. When you run the `gcloud container cluster create` command from Cloud Shell, it automatically configure `kubeconfig` to connect to the cluster that was just created. Click <walkthrough-editor-open-file filePath="~/.kube/kubeconfig">kubeconfig</walkthrough-editor-open-file> to open your `kubeconfig` in the Cloud Shell editor.
-
-### GKE Autoscaling Profiles
-
-Autoscaling profiles allow you to specify the utilization of available resources for a GKE cluster. The default autoscaling profile is `balanced` and optimizes for minimizing provisioning time to include taking longer to deprovision nodes that no longer have pods that can be evicted. The `optimize-utilization` profile configures the cluster autoscaler to scale down the cluster more aggressively: it can remove more nodes, and remove nodes faster. It also configures GKE to prefer to schedule Pods in nodes that already have high utilization, helping the cluster autoscaler to identify and remove underutilized nodes. This profile will result in better results with the CloudBees CI hibernation feature.
-
-Even though we already create the GKE cluster, we can still update it. Run the following command to update your GKE cluster to use the `optimize-utilization` profile:
-```bsh
-gcloud container clusters update "REPLACE_GITHUB_USER" \
-    --region "us-east1" \
-    --autoscaling-profile optimize-utilization
-```
-
->NOTE: CloudBees CI managed controllers are configured with meta-data that does not allow them to be evicted from a node that may otherwise be able to be removed by the Cluster Autoscaler if moved to another node with capacity.
-
 
 ## Install Supporting Kubernetes Services
 
@@ -111,7 +102,7 @@ helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manag
 
 #### Create a cert-manager `Issuer` for CloudBees CI
 
-A cert-manager `Issuer` is a Kubernetes resource that represents a certificate authority (CA) that is able to generate signed certificates by honoring certificate signing requests (CSRs). cert-manager automatically creates CSRs when you install an application that is configured to use a cert-manager provide certificate. cert-manager supports `ClusterIssuers` that work across all namespaces in a cluster and `Issuers` that can only issue certificates in the namespace they are created. We will be creating a `ClusterIssuer` to give us the flexibility of deploying managed controller, agents and other supporting applications, that require TLS, to different namespaces.
+A cert-manager `Issuer` is a custom Kubernetes resource that represents a certificate authority (CA) that is able to generate signed certificates by honoring certificate signing requests (CSRs). cert-manager automatically creates CSRs when you install an application that is configured to use a cert-manager provide certificate. cert-manager supports `ClusterIssuers` that work across all namespaces in a cluster and `Issuers` that can only issue certificates in the namespace they are created. We will be creating a `ClusterIssuer` to give us the flexibility of deploying managed controller, agents and other supporting applications, that require TLS, to different namespaces.
 
 Before we create our `ClusterIssuer` let's explore the contents by clicking <walkthrough-editor-open-file filePath="k8s/cluster-issuers.yml">`k8s/cluster-issuers.yml`</walkthrough-editor-open-file>.
 
