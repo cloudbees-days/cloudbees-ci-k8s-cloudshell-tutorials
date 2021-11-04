@@ -172,7 +172,7 @@ As mentioned earlier, we will be using a file to specify the chart values to ove
 - `ExtraVolumeMounts`: line 212, specified where to mount the `ExtraVolumes`
 - `StorageClass`: line 259, the name specified here, `regional-pd-ssd`, matches the `StorageClass` we created earlier with regional ssd persistent disk
 
-Before we use `helm` to install CloudBees CI, we need to create the `cbci-oc-init-groovy` `ConfigMap` with the contents of <walkthrough-editor-open-file filePath="init_groovy/09-license-activate.groovy">init_groovy/09-license-activate.groovy</walkthrough-editor-open-file>:
+Before we use `helm` to install CloudBees CI, we need to create the `cbci-oc-init-groovy` `ConfigMap` resource with the contents of <walkthrough-editor-open-file filePath="init_groovy/09-license-activate.groovy">init_groovy/09-license-activate.groovy</walkthrough-editor-open-file>:
 ```bsh
 kubectl create ns cbci
 kubectl -n cbci create configmap cbci-oc-init-groovy --from-file=init_groovy/ --dry-run=client -o yaml | kubectl apply -f -
@@ -181,6 +181,11 @@ The command above may look a bit more complicated than it needs to, so let's tak
 - `create ns`: we need to create the `ConfigMap` in the same name space as CloudBees CI
 - `--from-file=init_groovy/`: this parameter allows you to create a `ConfigMap` from one file or a directory of files. By pointing at a directory, we can add additional init groovy scripts and they will be added to the same `ConfigMap`
 - `--dry-run==client`: We are using this so we can pipe the output to a `kubectl apply` command. `kubectl create` is imperative and will fail if an object with the same name and in the same namespace already exist, but the `apply` command is declarative and just tells Kubernetes the state we want it to be in - so if the `ConfigMap` already exists it will just modify it to match the new one being applied. This is especially useful with automation.
+
+We also need to create a `ConfigMap` resource for the Operations Center CasC bundle named `oc-casc-bundle`. In this case, it will be made up of multiple files from your `casc/oc/` directory:
+```bsh
+kubectl -n cbci create configmap oc-casc-bundle --from-file=casc/oc --dry-run=client -o yaml | kubectl apply -f -
+```
 
 Now that we have created the `ConfigMap` we are now ready to use `helm` to install CloudBees CI:
 ```bsh
@@ -197,6 +202,6 @@ helm upgrade --install --wait cbci cloudbees/cloudbees-core \
 - We set the `CBCI_HOSTNAME` environment variable to use in the `helm` command to install CloudBees CI.
 - Finally, we use the `helm upgrade` command with the `--install` flag. Also note, that we are use a combination of `--set` parameters along with the `--values` parameter to override default values for our install.
 
-
+Once the install completes, there
 
 
