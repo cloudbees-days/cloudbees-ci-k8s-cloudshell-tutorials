@@ -135,6 +135,32 @@ Use `kubectl` to install the `regional-pd-ssd` `SC` into your cluster:
 kubectl apply -f k8s/regional-pd-ssd.yml
 ```
 
+## Configure DNS for CloudBees CI
+
+
+
+```bsh
+PROJECT_ID=core-workshop
+DNS_ZONE=workshop-cb-sa
+#get ingress-nginx lb ip
+INGRESS_IP=$(kubectl get services -n ingress-nginx | grep LoadBalancer  | awk '{print $4}')
+CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
+
+gcloud dns --project=$PROJECT_ID record-sets transaction start --zone=$DNS_ZONE
+gcloud dns --project=$PROJECT_ID record-sets transaction add $INGRESS_IP --name=$CBCI_HOSTNAME. --ttl=300 --type=A --zone=$DNS_ZONE
+gcloud dns --project=$PROJECT_ID record-sets transaction execute --zone=$DNS_ZONE
+```
+
 ## Install CloudBees CI
 
-As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI.
+As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI (and the `--set` parameter, but more about that ahead). Before we run the `helm` command to install CloudBees CI, let's take a look at the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">values file</walkthrough-editor-open-file>. Some things to note include:
+- `dockerImage`: on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified the `gcloud` command to create our GKE clusters.
+- `CasC`: line 38; it is `enabled` and the `ConfigMapName` is set to `oc-casc-bundle`.
+- `Protocol`: line 61, it is set to `https` - thank you cert-manager.
+- `JavaOpts`: line 89, 
+    - controller provisioning has been configure to delete persistent storage when a managed controller is deleted
+    - the Jenkins setup wizard has been disable
+    - the `ManagePermission` and `SystemReadPermission` permissions have been enabled (without a plugin).
+- 
+
+
