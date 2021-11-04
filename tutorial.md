@@ -19,7 +19,7 @@ We will be creating a regional cluster to better simulate a production environme
 
 ### Use the glcoud CLI to create a regional cluster
 
-There are over 100 different flags available for the `gcloud` CLI `clusters create` command and we are only specifying 12. Click on the <walkthrough-cloud-shell-icon></walkthrough-cloud-shell-icon> button for the `gloud` CLI command listed below to copy the command into your cloudshell console and then run that command:
+There are over 100 different flags available for the `gcloud` CLI `clusters create` command and we are only specifying 13. Click on the <walkthrough-cloud-shell-icon></walkthrough-cloud-shell-icon> button for the `gloud` CLI command listed below to copy the command into your cloudshell console and then run that command:
 ```bsh
 gcloud config set project "REPLACE_GCP_PROJECT"
 gcloud container clusters create "REPLACE_GITHUB_USER" \
@@ -31,7 +31,8 @@ gcloud container clusters create "REPLACE_GITHUB_USER" \
     --disk-type "pd-ssd" --disk-size "50" \
     --service-account "gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com" \
     --enable-autoscaling --min-nodes "0" --max-nodes "4" \
-    --autoscaling-profile optimize-utilization
+    --autoscaling-profile optimize-utilization \
+    --workload-pool "core-workshop.svc.id.goog"
 ```
 >**NOTE:** GKE cluster creation may take as long as 5 minutes or more, so we will take that time to review all of the parameters that we set above.
 The flags we are setting are:
@@ -44,6 +45,7 @@ The flags we are setting are:
 - **`--service-account`** - Required to pull the pre-release container images we are using for CloudBees CI from an Ops managed GCR.
 - **`--enable-autoscaling`** - Autoscaling is not enabled by default and is very easy to enable on GKE via this flag. For AWS EKS you must manually configure and install the Kubernetes Cluster Autoscaler. 
 - **`--autoscaling-profile optimize-utilization`** - Autoscaling profiles allow you to specify the utilization of available resources for a GKE cluster. The default autoscaling profile is `balanced` and optimizes for minimizing provisioning time to include taking longer to deprovision nodes that no longer have pods that can be evicted. The `optimize-utilization` profile configures the cluster autoscaler to scale down the cluster more aggressively: it can remove more nodes, and remove nodes faster. It also configures GKE to prefer to schedule Pods in nodes that already have high utilization, helping the cluster autoscaler to identify and remove underutilized nodes. This profile will result in better performance with the CloudBees CI hibernation feature.
+- **`--workload-pool`:** enables Workload Identity for the initial node pool created for the cluster. We will learn more about Workload Identity in a later section.
 
 >NOTE: CloudBees CI managed controllers are configured with meta-data that does not allow them to be evicted from a node that may otherwise be able to be removed by the Cluster Autoscaler if moved to another node with capacity.
 
@@ -246,8 +248,45 @@ Run the following command to check that the `cbci-oc-init-groovy` `ConfigMap` wa
 kubectl -n cbci exec cjoc-0 -- more /var/jenkins_config/init.groovy.d/09-license-activate.groovy
 ```
 
+The Operations Center for your CloudBees CI cluster should be running or starting up, and available at: [http://REPLACE_GITHUB_USER.workshop.cb-sa.io]/cjoc](http://REPLACE_GITHUB_USER.workshop.cb-sa.io]/cjoc])
+
+Don't **Create First Admin User**. In the next section we will update the OC CasC bundle to create a user for us and retrieve the [password from the GCP Secrets Manager](https://console.cloud.google.com/security/secret-manager/secret/cbci-oc-admin-password/versions?project=core-workshop).
+
 ## Integrating GCP Services via Workload Identity
 
-Sometimes you need to integrate other GCP services with CloudBees CI controllers and/or agents. Workload Identity for GKE allows us to bind GCP IAM Service Accounts (GSA) to Kubernetes Service Accounts (KSA) in a specific Kubernetes Namespace.
+Sometimes you need to integrate other GCP services with CloudBees CI controllers and/or agents. We need to integrate with the GCP Secrets Manager so we can inject those secrets into our CloudBees CI CasC bundles. Workload Identity for GKE allows us to bind GCP IAM Service Accounts (GSA) to Kubernetes Service Accounts (KSA) in a specific Kubernetes Namespace. In addition to configuring Workload Identity for our GKE clusters, we will also need to install the Secrets Store CSI driver for Kubernetes secrets and the GCP provider that integrates the GCP Secrets Manager.
 
+### Configure Workload Identity
+We will now configure the `cjoc serviceAccount` (the `serviceAccount` that the `cjoc pod` is running under) in the `cbci namespace` to be bound to the `core-cloud-run@REPLACE_GCP_PROJECT.iam.gserviceaccount.com` GCP IAM service account - which has been given the necessary permissions to retrieve the secrets we need from the GCP secrets manager. First we will create an IAM policy binding between the Kubernetes `cjoc ServiceAccount` and the GCP IAM service account by running the following command:
+```bsh
+gcloud iam service-accounts add-iam-policy-binding core-cloud-run@REPLACE_GCP_PROJECT.iam.gserviceaccount.com \
+    --role roles/iam.workloadIdentityUser \
+    --member "serviceAccount:REPLACE_GCP_PROJECT.svc.id.goog[cbci/jenkins]"
+```
+Next, we will add an annotation to the `cjoc ServiceAccount` by running the following command:
+```bsh
+kubectl annotate serviceaccount \
+    --namespace cbci cjoc \
+    iam.gke.io/gcp-service-account=core-cloud-run@REPLACE_GCP_PROJECT.iam.gserviceaccount.com
+```
 
+### Install Secrets Store CSI driver
+
+We will use `helm` to install the Secrets Store CSI driver for Kubernetes secrets:
+```bsh
+helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+helm repo update
+helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system
+```
+Next, will install the Google Secret Manager provider for the Secret Store CSI Driver:
+```bsh
+git clone https://github.com/GoogleCloudPlatform/secrets-store-csi-driver-provider-gcp.git
+kubectl apply -f secrets-store-csi-driver-provider-gcp/deploy/provider-gcp-plugin.yaml
+```
+
+Now that we have Secrets Store CSI driver and the Google Secret Manager provider installed we can <walkthrough-editor-open-file filePath="k8s/cbci-cjoc-secret-provider.yml">create a `SecretProviderClass`</walkthrough-editor-open-file> (another CRD, provided by the Secret Store CSI Driver) to use with the `cjoc Pod`:
+```bsh
+kubectl apply -f ./k8s/cbci-cjoc-secret-provider.yml
+```
+
+In order for the `cjoc Pod`

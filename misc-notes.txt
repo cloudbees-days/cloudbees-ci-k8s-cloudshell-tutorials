@@ -49,6 +49,8 @@ DNS_ZONE=workshop-cb-sa
 INGRESS_IP=$(kubectl get services -n ingress-nginx | grep LoadBalancer  | awk '{print $4}')
 CBCI_HOSTNAME=staging-cbci.workshop.cb-sa.io
 
+kubectl api-resources | grep cert-manager.io/v1 
+
 gcloud dns --project=$PROJECT_ID record-sets transaction start --zone=$DNS_ZONE
 gcloud dns --project=$PROJECT_ID record-sets transaction add $INGRESS_IP --name=$CBCI_HOSTNAME. --ttl=300 --type=A --zone=$DNS_ZONE
 gcloud dns --project=$PROJECT_ID record-sets transaction execute --zone=$DNS_ZONE
@@ -98,3 +100,7 @@ gcloud container clusters update "REPLACE_GITHUB_USER" \
     --maintenance-window-end "2020-08-11T04:00:00Z" \
     --maintenance-window-recurrence "FREQ=WEEKLY;BYDAY=SA,SU"
 ```
+
+
+gcloud container clusters update kmadel --region us-east1 \
+    --workload-pool=core-workshop.svc.id.goog
