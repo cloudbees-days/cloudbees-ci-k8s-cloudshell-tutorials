@@ -46,6 +46,8 @@ The flags we are setting are:
 
 >NOTE: CloudBees CI managed controllers are configured with meta-data that does not allow them to be evicted from a node that may otherwise be able to be removed by the Cluster Autoscaler if moved to another node with capacity.
 
+[View the clusters in the GCP web console.](https://console.cloud.google.com/kubernetes/list/overview?project=core-workshop)
+
 Once the cluster creation completes, run the following command to see where your nodes are running:
 ```bsh
 kubectl get nodes --label-columns failure-domain.beta.kubernetes.io/region,failure-domain.beta.kubernetes.io/zone
