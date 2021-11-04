@@ -289,4 +289,60 @@ Now that we have Secrets Store CSI driver and the Google Secret Manager provider
 kubectl apply -f ./k8s/cbci-cjoc-secret-provider.yml
 ```
 
-In order for the `cjoc Pod`
+In order to inject the `cbciCjocAdminPassword` secret into the `cjoc Pod` and use it in the `jenkinsyaml` of the OC CasC bundle we must:
+- update the JCasC `jenkins.yaml` to use the secret and update the `oc-casc-bundle ConfigMap`
+- add a JCasC environment variable that tells JCasC where to find secret variables to replace
+- mount the secret to the `cjoc Pod`
+- use `helm` to update the CloudBees CI application to get the new environment variable, the mount and the updated `ConfigMap`
+
+First, open the <walkthrough-editor-open-file filePath="casc/oc/jenkins.yaml">casc/oc/jenkins.yaml</walkthrough-editor-open-file> file. Replace the entire `jenkins` section with the following:
+```yml
+jenkins:
+  authorizationStrategy: "cloudBeesRoleBasedAccessControl"
+  securityRealm:
+    local:
+      allowsSignup: false
+      enableCaptcha: false
+      users:
+       - id: admin
+         password: "${cbciCjocAdminPassword}"
+```
+Notice that the `password` value `cbciCjocAdminPassword` must match the mapping we created in the `SecretProviderClass` we created above. Next, run the following command to update the `oc-casc-bundle ConfigMap`:
+```bsh
+kubectl -n cbci create configmap oc-casc-bundle --from-file=casc/oc --dry-run=client -o yaml | kubectl apply -f -
+```
+
+Now we will update the `helm` values for the CloudBees CI application. Open the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">helm/cbci-values.yml</walkthrough-editor-open-file> file. 
+- At around line 83 insert the following `ContainerEnv` section to add the necessary JCasC environment variable:
+```yml
+
+  ContainerEnv:
+  - name: "SECRETS"
+    value: "/var/jenkins_home/jcasc_secrets"
+```
+- At around line 208 add the `cbci-cjoc-secret-provider SecretProviderClass` as an additional `ExtraVolumes`:
+```yml
+
+  - name: "jcasc-secrets"
+    csi:
+      driver: secrets-store.csi.k8s.io
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: "cbci-cjoc-secret-provider"
+```
+- At around line 224 add the `ExtraVolumeMounts` for that volume and note that the `mountPath` matches the ` SECRETS` environment variable `value`:
+```yml
+
+  - name: "jcasc-secrets"
+    mountPath: "/var/jenkins_home/jcasc_secrets"
+    readOnly: true
+```
+- Finally, we will use `helm` to update the `cbci` application:
+```bsh
+CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
+helm upgrade --install --wait cbci cloudbees/cloudbees-core \
+  --set OperationsCenter.HostName=$CBCI_HOSTNAME \
+  --namespace='cbci'  --create-namespace \
+  --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
+  --values ./helm/cbci-values.yml
+```

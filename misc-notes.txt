@@ -104,3 +104,12 @@ gcloud container clusters update "REPLACE_GITHUB_USER" \
 
 gcloud container clusters update kmadel --region us-east1 \
     --workload-pool=core-workshop.svc.id.goog
+
+
+gcloud iam service-accounts add-iam-policy-binding core-cloud-run@core-workshop.iam.gserviceaccount.com \
+    --role roles/iam.workloadIdentityUser \
+    --member "serviceAccount:core-workshop.svc.id.goog[cbci/jenkins]"
+
+kubectl annotate serviceaccount \
+    --namespace cbci cjoc \
+    iam.gke.io/gcp-service-account=core-cloud-run@core-workshop.iam.gserviceaccount.com
