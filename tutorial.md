@@ -202,7 +202,7 @@ As mentioned earlier, we will be using a file to specify the chart values to ove
 - **`ExtraVolumeMounts`:** line 212, specified where to mount the `ExtraVolumes`
 - **`StorageClass`:** line 259, the name specified here, `regional-pd-ssd`, matches the `StorageClass` we created earlier with regional ssd persistent disk
 
-Before we use `helm` to install CloudBees CI, we need to create the `cbci-oc-init-groovy` `ConfigMap` resource with the contents of <walkthrough-editor-open-file filePath="init_groovy/09-license-activate.groovy">init_groovy/09-license-activate.groovy</walkthrough-editor-open-file>:
+Before we use `helm` to install CloudBees CI, we need to create the `cbci-oc-init-groovy` `ConfigMap` resource with the contents of <walkthrough-editor-open-file filePath="init_groovy/09-license-activate.groovy">init_groovy/09-license-activate.groovy</walkthrough-editor-open-file> that will automatically create a trial license for our CloudBees CI installation:
 ```bsh
 kubectl create ns cbci
 kubectl -n cbci create configmap cbci-oc-init-groovy --from-file=init_groovy/ --dry-run=client -o yaml | kubectl apply -f -
