@@ -63,7 +63,7 @@ more ~/.kube/config
 
 ## Install Supporting Kubernetes Services
 
-There are two supporting Kubernetes services that we will install before installing CloudBees CI to exposes HTTP and HTTPS routes (Ingresses) from outside the cluster to CloudBees CI services (controllers) within the cluster and to provide dynamic TLS for those Ingresses.
+There are two supporting Kubernetes services that we will install before installing CloudBees CI. One will be used to expose HTTP and HTTPS routes (Ingresses) from outside the cluster to CloudBees CI services (controllers) within the cluster and the other to provide dynamic TLS (HTTPS certificate) for those Ingresses.
 
 >NOTE: Openshift actually refers to these as a `Route` resource instead of an `Ingress` resource.
 
