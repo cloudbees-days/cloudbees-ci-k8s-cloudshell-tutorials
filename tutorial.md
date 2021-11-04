@@ -144,7 +144,7 @@ But we have created a regional cluster, across two zones. If we used one of the 
 First, lets take a look at the manifest for our custom `StorageClass`. Click <walkthrough-editor-open-file filePath="k8s/regional-pd-ssd-sc.yml">`k8s/regional-pd-ssd-sc.yml`</walkthrough-editor-open-file>.
 
 Some things to note are:
-- `provisioner`: the `SC` is using the `pd.csi.storage.gke.io` provisioner. The GKE containers storage interface driver is required for using regional persistent disk.
+- `provisioner`: the `SC` is using the `pd.csi.storage.gke.io` provisioner. The GKE *containers storage interface* driver is required for using regional persistent disk.
 - `parameters/type`: the type is `pd-ssd` which is backed by fast SSD persistent disks, and faster disk results in better performance for CloudBees CI.
 - `parameters/replication-type`: `regional-pd` must be specified here to use regional persistent disk.
 - `allowedTopologies`: the `values` for the `topology.gke.io/zone` `key` must be set to match the zones where we deployed the GKE cluster nodes.
