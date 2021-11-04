@@ -87,7 +87,10 @@ helm upgrade --install --wait ingress-nginx ingress-nginx/ingress-nginx \
 - `--wait`: will wait until all Pods, PVCs, Services, and minimum number of Pods of a Deployment, StatefulSet, or ReplicaSet are in a ready state before marking the release as successful.
 - `--create-namespace`: will create the Kubernetes namespace if it doesn't already exist.
 
-Once the install is complete there should be a new Kubernetes `Service` of `LoadBalancer TYPE` in the newly created `ingress-nginx namespace`.
+Once the install is complete there should be a new Kubernetes `Service` of `LoadBalancer TYPE` in the newly created `ingress-nginx namespace`. Run the following command to check:
+```bsh
+kubectl get services -n ingress-nginx ingress-nginx-controller
+```
 
 ### TLS for HTTPS
 
@@ -103,6 +106,11 @@ helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manag
   --set installCRDs=true --wait
 ```
 - `--set`: The various `--set` parameters are used to override the default values of different variables in the helm chart. You may also pass those values as a yaml file with the `-f` parameters as we will see with CloudBees CI. The `installCRDs=true` value installs the cert-manager **CustomResourceDefinitions** (Kubernetes objects that allow you to extend Kubernetes with custom features) that we will interact with next.
+
+Run the following command to check the install:
+```bsh
+kubectl get pods --namespace cert-manager
+```
 
 #### Create a cert-manager `Issuer` for CloudBees CI
 
