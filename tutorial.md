@@ -109,7 +109,7 @@ helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manag
   --set global.leaderElection.namespace=cert-manager  --set prometheus.enabled=false \
   --set installCRDs=true --wait
 ```
-- `--set`: The various `--set` parameters are used to override the default values of different variables in the helm chart. You may also pass those values as a yaml file with the `-f` parameters as we will see with CloudBees CI. The `installCRDs=true` value installs the cert-manager **CustomResourceDefinitions** (Kubernetes objects that allow you to extend Kubernetes with custom features) that we will interact with next.
+- `--set`: The various `--set` parameters are used to override the default values of different variables in the helm chart. You may also pass those values as a yaml file with the `--values` or `-f` parameters as we will see with CloudBees CI. The `installCRDs=true` value installs the cert-manager **CustomResourceDefinitions** (Kubernetes objects that allow you to extend Kubernetes with custom features) that we will interact with next.
 
 Run the following command to check the install:
 ```bsh
@@ -118,7 +118,7 @@ kubectl get pods --namespace cert-manager
 
 #### Create a cert-manager `Issuer` for CloudBees CI
 
-A cert-manager `Issuer` is a custom Kubernetes resource that represents a certificate authority (CA) that is able to generate signed certificates by honoring certificate signing requests (CSRs). cert-manager automatically creates CSRs when you install an application that is configured to use a cert-manager provide certificate. cert-manager supports `ClusterIssuers` that work across all namespaces in a cluster and `Issuers` that can only issue certificates in the namespace they are created. We will be creating a `ClusterIssuer` to give us the flexibility of deploying managed controller, agents and other supporting applications, that require TLS, to different namespaces.
+A cert-manager `Issuer` is a custom Kubernetes resource that represents a certificate authority (CA) that is able to generate signed certificates by honoring certificate signing requests (CSRs). cert-manager automatically creates CSRs when you install an application that is configured to use a cert-manager provided certificate. cert-manager supports `ClusterIssuers` that work across all namespaces in a cluster and `Issuers` that can only issue certificates in the namespace they are created. We will be creating a `ClusterIssuer` to give us the flexibility of deploying CJOC, managed controller, and other supporting applications, that require TLS, to different namespaces.
 
 Before we create our `ClusterIssuer` let's explore the contents by clicking <walkthrough-editor-open-file filePath="k8s/cluster-issuers.yml">`k8s/cluster-issuers.yml`</walkthrough-editor-open-file>.
 
