@@ -123,6 +123,11 @@ Now, use the `kubectl` CLI to install the `letsencrypt-staging` and `letsencrypt
 kubectl apply -f ./k8s/cluster-issuers.yml
 ```
 
+And the run the following command to check that they were created:
+```bsh
+kubectl get ClusterIssuers
+```
+
 ## Create Regional Persistent Disk Storage Class
 
 When creating a GKE cluster, several `StorageClasses` (cluster wide resources) are automatically created for you. But we have create a regional cluster, across two zones. If we used one of the provided `StorageClasses` (`SC`) then a managed controller would not be able to failover to the other zone the persistent disk is zone specific. So we will need to create a custom `StorageClass` that uses GCP regional persistent disks.
