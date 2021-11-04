@@ -35,15 +35,15 @@ gcloud container clusters create "REPLACE_GITHUB_USER" \
 ```
 >**NOTE:** GKE cluster creation may take as long as 5 minutes or more, so we will take that time to review all of the parameters that we set above.
 The flags we are setting are:
-- `--region` - This is required to create a regional GKE cluster. To create a zonal cluster you would use the `--zone` flag. The value is set to `us-east1` to comply with CloudBees Ops rules.
-- `--node-locations` - Specifies the zone(s) where the worker nodes will run. If not specified then they are spread across 3 random zones within the cluster region (for regional clusters). We have specified two zones for use with GCP regional persistent disks, because GCP regional disks are only replicated across two zones.
-- `--num-nodes` - The number of nodes we want initially in each of the cluster's zones. In this case we are defining two zones for the cluster nodes so there will be 2 total nodes across the entire cluster.
-- `--cluster-version` and `--release-channel` - We have specified this flag as we would like to use a non-default GKE version from the **regular** release channel. By using a version later than `1.21.0-gke.1500`, we pick up a number of changes to the default values for flags to include using VPC-native as the default network mode.
-- `--machine-type` - The default machine type is an **e2-medium** that has not been as stable for running CloudBees CI workloads as the **n1** machines have been.
-- `--disk-type` and `--disk-size` - The defaults are too large (100gb) and slower that the one we are specifying.
-- `--service-account` - Required to pull the pre-release container images we are using for CloudBees CI from an Ops managed GCR.
-- `--enable-autoscaling` - Autoscaling is not enabled by default and is very easy to enable on GKE via this flag. For AWS EKS you must manually configure and install the Kubernetes Cluster Autoscaler. 
-- `--autoscaling-profile optimize-utilization` - Autoscaling profiles allow you to specify the utilization of available resources for a GKE cluster. The default autoscaling profile is `balanced` and optimizes for minimizing provisioning time to include taking longer to deprovision nodes that no longer have pods that can be evicted. The `optimize-utilization` profile configures the cluster autoscaler to scale down the cluster more aggressively: it can remove more nodes, and remove nodes faster. It also configures GKE to prefer to schedule Pods in nodes that already have high utilization, helping the cluster autoscaler to identify and remove underutilized nodes. This profile will result in better performance with the CloudBees CI hibernation feature.
+- **`--region`** - This is required to create a regional GKE cluster. To create a zonal cluster you would use the `--zone` flag. The value is set to `us-east1` to comply with CloudBees Ops rules.
+- **`--node-locations`** - Specifies the zone(s) where the worker nodes will run. If not specified then they are spread across 3 random zones within the cluster region (for regional clusters). We have specified two zones for use with GCP regional persistent disks, because GCP regional disks are only replicated across two zones.
+- **`--num-nodes`** - The number of nodes we want initially in each of the cluster's zones. In this case we are defining two zones for the cluster nodes so there will be 2 total nodes across the entire cluster.
+- **`--cluster-version` and `--release-channel`** - We have specified this flag as we would like to use a non-default GKE version from the **regular** release channel. By using a version later than `1.21.0-gke.1500`, we pick up a number of changes to the default values for flags to include using VPC-native as the default network mode.
+- **`--machine-type`** - The default machine type is an **e2-medium** that has not been as stable for running CloudBees CI workloads as the **n1** machines have been.
+- **`--disk-type` and `--disk-size`** - The defaults are too large (100gb) and slower that the one we are specifying.
+- **`--service-account`** - Required to pull the pre-release container images we are using for CloudBees CI from an Ops managed GCR.
+- **`--enable-autoscaling`** - Autoscaling is not enabled by default and is very easy to enable on GKE via this flag. For AWS EKS you must manually configure and install the Kubernetes Cluster Autoscaler. 
+- **`--autoscaling-profile optimize-utilization`** - Autoscaling profiles allow you to specify the utilization of available resources for a GKE cluster. The default autoscaling profile is `balanced` and optimizes for minimizing provisioning time to include taking longer to deprovision nodes that no longer have pods that can be evicted. The `optimize-utilization` profile configures the cluster autoscaler to scale down the cluster more aggressively: it can remove more nodes, and remove nodes faster. It also configures GKE to prefer to schedule Pods in nodes that already have high utilization, helping the cluster autoscaler to identify and remove underutilized nodes. This profile will result in better performance with the CloudBees CI hibernation feature.
 
 >NOTE: CloudBees CI managed controllers are configured with meta-data that does not allow them to be evicted from a node that may otherwise be able to be removed by the Cluster Autoscaler if moved to another node with capacity.
 
@@ -87,9 +87,9 @@ Finally, we can install the ingress-nginx chart:
 helm upgrade --install --wait ingress-nginx ingress-nginx/ingress-nginx \
     -n ingress-nginx --create-namespace
 ```
-- `upgrade --install`: if a release by this name doesn't already exist, runs an install. By using `upgrade --install`, we are able to use the same command to install as we would for updating the application. This is especially useful in the context of software automation.
-- `--wait`: will wait until all Pods, PVCs, Services, and minimum number of Pods of a Deployment, StatefulSet, or ReplicaSet are in a ready state before marking the release as successful.
-- `--create-namespace`: will create the Kubernetes namespace if it doesn't already exist.
+- **`upgrade --install`:** if a release by this name doesn't already exist, runs an install. By using `upgrade --install`, we are able to use the same command to install as we would for updating the application. This is especially useful in the context of software automation.
+- **`--wait`:** will wait until all Pods, PVCs, Services, and minimum number of Pods of a Deployment, StatefulSet, or ReplicaSet are in a ready state before marking the release as successful.
+- **`--create-namespace`:** will create the Kubernetes namespace if it doesn't already exist.
 
 Once the install is complete there should be a new Kubernetes `Service` of `LoadBalancer TYPE` in the newly created `ingress-nginx namespace`. Run the following command to check:
 ```bsh
@@ -109,7 +109,7 @@ helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manag
   --set global.leaderElection.namespace=cert-manager  --set prometheus.enabled=false \
   --set installCRDs=true --wait
 ```
-- `--set`: The various `--set` parameters are used to override the default values of different variables in the helm chart. You may also pass those values as a yaml file with the `--values` or `-f` parameters as we will see with CloudBees CI. The `installCRDs=true` value installs the cert-manager **CustomResourceDefinitions** (Kubernetes objects that allow you to extend Kubernetes with custom features) that we will interact with next.
+- **`--set`:** The various `--set` parameters are used to override the default values of different variables in the helm chart. You may also pass those values as a yaml file with the `--values` or `-f` parameters as we will see with CloudBees CI. The **`installCRDs=true`** value installs the cert-manager **CustomResourceDefinitions** (Kubernetes objects that allow you to extend Kubernetes with custom features) that we will interact with next.
 
 Run the following command to check the install:
 ```bsh
@@ -144,10 +144,10 @@ But we have created a regional cluster, across two zones. If we used one of the 
 First, lets take a look at the manifest for our custom `StorageClass`. Click <walkthrough-editor-open-file filePath="k8s/regional-pd-ssd-sc.yml">`k8s/regional-pd-ssd-sc.yml`</walkthrough-editor-open-file>.
 
 Some things to note are:
-- `provisioner`: the `SC` is using the `pd.csi.storage.gke.io` provisioner. The GKE *containers storage interface* driver is required for using regional persistent disk.
-- `parameters/type`: the type is `pd-ssd` which is backed by fast SSD persistent disks, and faster disk results in better performance for CloudBees CI.
-- `parameters/replication-type`: `regional-pd` must be specified here to use regional persistent disk.
-- `allowedTopologies`: the `values` for the `topology.gke.io/zone` `key` must be set to match the zones where we deployed the GKE cluster nodes.
+- **`provisioner`:** the `SC` is using the `pd.csi.storage.gke.io` provisioner. The GKE *containers storage interface* driver is required for using regional persistent disk.
+- **`parameters/type`:** the type is `pd-ssd` which is backed by fast SSD persistent disks, and faster disk results in better performance for CloudBees CI.
+- **`parameters/replication-type`:** `regional-pd` must be specified here to use regional persistent disk.
+- **`allowedTopologies`:** the `values` for the `topology.gke.io/zone` `key` must be set to match the zones where we deployed the GKE cluster nodes.
 
 Use `kubectl` to install the `regional-pd-ssd` `SC` into your cluster:
 ```bsh
@@ -187,20 +187,20 @@ ping REPLACE_GITHUB_USER.workshop.cb-sa.io
 ## Install CloudBees CI
 
 As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI (and the `--set` parameter, but more about that ahead). Before we run the `helm` command to install CloudBees CI, let's take a look at the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">values file</walkthrough-editor-open-file>. Some things to note include:
-- `dockerImage`: on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified the `gcloud` command to create our GKE clusters has the necessary permissions.
-- `CasC`: line 38; it is `enabled` and the `ConfigMapName` is set to `oc-casc-bundle`.
-- `Protocol`: line 61, it is set to `https` - thank you cert-manager.
-- `JavaOpts`: line 89 
+- **`dockerImage`:** on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified the `gcloud` command to create our GKE clusters has the necessary permissions.
+- **`CasC`:** line 38; it is `enabled` and the `ConfigMapName` is set to `oc-casc-bundle`.
+- **`Protocol`:** line 61, it is set to `https` - thank you cert-manager.
+- **`JavaOpts`:** line 89 
     - controller provisioning has been configure to delete persistent storage when a managed controller is deleted
     - the Jenkins setup wizard has been disable
     - the `ManagePermission` and `SystemReadPermission` permissions have been enabled (without a plugin)
-- `Ingress`: line 159
+- **`Ingress`:** line 159
     - the `Class` is set to `nginx` to use the ingress-nginx controller we installed earlier
     - the `cert-manager.io/cluster-issuer` is set to `letsencrypt-prod`; this will trigger the cert-manager add-on we install to create a TLS certificate for our CloudBees CI `Ingress`
     - under `tls`, `Enable` is set to `true` and note the `SecretName` of `cbci-tls` - this will be the name of the Kubernetes `Secret` that the cert-manager creates with the TLS certificate it retrieves from Let's Encrypt
-- `ExtraVolumes`: line 201, specifies the Kubernetes `ConfigMap` `cbci-oc-init-groovy` to be mounted to the Operations Center `Pod`
-- `ExtraVolumeMounts`: line 212, specified where to mount the `ExtraVolumes`
-- `StorageClass`: line 259, the name specified here, `regional-pd-ssd`, matches the `StorageClass` we created earlier with regional ssd persistent disk
+- **`ExtraVolumes`:** line 201, specifies the Kubernetes `ConfigMap` `cbci-oc-init-groovy` to be mounted to the Operations Center `Pod`
+- **`ExtraVolumeMounts`:** line 212, specified where to mount the `ExtraVolumes`
+- **`StorageClass`:** line 259, the name specified here, `regional-pd-ssd`, matches the `StorageClass` we created earlier with regional ssd persistent disk
 
 Before we use `helm` to install CloudBees CI, we need to create the `cbci-oc-init-groovy` `ConfigMap` resource with the contents of <walkthrough-editor-open-file filePath="init_groovy/09-license-activate.groovy">init_groovy/09-license-activate.groovy</walkthrough-editor-open-file>:
 ```bsh
@@ -208,9 +208,9 @@ kubectl create ns cbci
 kubectl -n cbci create configmap cbci-oc-init-groovy --from-file=init_groovy/ --dry-run=client -o yaml | kubectl apply -f -
 ```
 The command above may look a bit more complicated than it needs to, so let's take a look at it:
-- `create ns`: we need to create the `ConfigMap` in the same name space as CloudBees CI
-- `--from-file=init_groovy/`: this parameter allows you to create a `ConfigMap` from one file or a directory of files. By pointing at a directory, we can add additional init groovy scripts and they will be added to the same `ConfigMap`
-- `--dry-run==client`: We are using this so we can pipe the output to a `kubectl apply` command. `kubectl create` is imperative and will fail if an object with the same name and in the same namespace already exist, but the `apply` command is declarative and just tells Kubernetes the state we want it to be in - so if the `ConfigMap` already exists it will just modify it to match the new one being applied. This is especially useful with automation.
+- **`create ns`:** we need to create the `ConfigMap` in the same name space as CloudBees CI
+- **`--from-file=init_groovy/`:** this parameter allows you to create a `ConfigMap` from one file or a directory of files. By pointing at a directory, we can add additional init groovy scripts and they will be added to the same `ConfigMap`
+- **`--dry-run==client`:** We are using this so we can pipe the output to a `kubectl apply` command. `kubectl create` is imperative and will fail if an object with the same name and in the same namespace already exist, but the `apply` command is declarative and just tells Kubernetes the state we want it to be in - so if the `ConfigMap` already exists it will just modify it to match the new one being applied. This is especially useful with automation.
 
 We also need to create a `ConfigMap` resource for the Operations Center CasC bundle named `oc-casc-bundle`. In this case, it will be made up of multiple files from your `casc/oc/` directory:
 ```bsh
