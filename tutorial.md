@@ -187,7 +187,7 @@ ping REPLACE_GITHUB_USER.workshop.cb-sa.io
 ## Install CloudBees CI
 
 As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI (and the `--set` parameter, but more about that ahead). Before we run the `helm` command to install CloudBees CI, let's take a look at the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">values file</walkthrough-editor-open-file>. Some things to note include:
-- **`dockerImage`:** on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified the `gcloud` command to create our GKE clusters has the necessary permissions.
+- **`dockerImage`:** on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified in the `gcloud` command to create our GKE clusters has the necessary permissions.
 - **`CasC`:** line 38; it is `enabled` and the `ConfigMapName` is set to `oc-casc-bundle`.
 - **`Protocol`:** line 61, it is set to `https` - thank you cert-manager.
 - **`JavaOpts`:** line 89 
