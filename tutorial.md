@@ -56,7 +56,10 @@ kubectl get nodes --label-columns failure-domain.beta.kubernetes.io/region,failu
 
 It should be no surprise that all the nodes are running in either the `us-east1-b` zone or the `us-east1-c` zone, as specified in the `clusters create` command.
 
-Also, you may wonder how the `kubectl` CLI was able to interact with your cluster. When you run the `gcloud container cluster create` command from Cloud Shell, it automatically configure `kubeconfig` to connect to the cluster that was just created. Click <walkthrough-editor-open-file filePath="~/.kube/kubeconfig">kubeconfig</walkthrough-editor-open-file> to open your `kubeconfig` in the Cloud Shell editor.
+Also, you may wonder how the `kubectl` CLI was able to interact with your cluster. When you run the `gcloud container cluster create` command from Cloud Shell, it automatically configure `kubeconfig` to connect to the cluster that was just created. Run the following command to explore your `kubeconfig` file:
+```bsh
+more ~/.kube/config
+```
 
 ## Install Supporting Kubernetes Services
 
