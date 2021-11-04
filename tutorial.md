@@ -141,7 +141,7 @@ kubectl get sc
 
 But we have created a regional cluster, across two zones. If we used one of the provided `StorageClasses` (`SC`), then a managed controller would not be able to failover to the other zone because a regular persistent disk is zone specific. So we will need to create a custom `StorageClass` that uses GCP regional persistent disks.
 
-First, lets take a look at the manifest for our custom `StorageClass`. Click <walkthrough-editor-open-file filePath="k8s/regional-pd-ssd.yml">`k8s/regional-pd-ssd.yml`</walkthrough-editor-open-file>.
+First, lets take a look at the manifest for our custom `StorageClass`. Click <walkthrough-editor-open-file filePath="k8s/regional-pd-ssd-sc.yml">`k8s/regional-pd-ssd-sc.yml`</walkthrough-editor-open-file>.
 
 Some things to note are:
 - `provisioner`: the `SC` is using the `pd.csi.storage.gke.io` provisioner. The GKE containers storage interface driver is required for using regional persistent disk.
