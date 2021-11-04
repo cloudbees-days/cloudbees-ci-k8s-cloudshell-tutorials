@@ -19,27 +19,28 @@ We will be creating a regional cluster to better simulate a production environme
 
 ### Use the glcoud CLI to create a regional cluster
 
-There are over 100 different flags available for the `clusters create` command and we are only specifying 10. Click on the <walkthrough-cloud-shell-icon></walkthrough-cloud-shell-icon> button for the `gloud` CLI command listed below to copy the command into your cloudshell console and then run that command.
+There are over 100 different flags available for the `gcloud` CLI `clusters create` command and we are only specifying 12. Click on the <walkthrough-cloud-shell-icon></walkthrough-cloud-shell-icon> button for the `gloud` CLI command listed below to copy the command into your cloudshell console and then run that command:
 ```bsh
 gcloud config set project "REPLACE_GCP_PROJECT"
 gcloud container clusters create "REPLACE_GITHUB_USER" \
     --region "us-east1" \
-    --num-nodes=2 \
     --node-locations "us-east1-b","us-east1-c" \
+    --num-nodes=1 \
     --cluster-version "1.21.5-gke.1302" --release-channel "regular" \
     --machine-type "n1-standard-4" \
     --disk-type "pd-ssd" --disk-size "50" \
     --service-account "gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com" \
-    --enable-autoscaling --min-nodes "1" --max-nodes "4" \
+    --enable-autoscaling --min-nodes "0" --max-nodes "4" \
     --autoscaling-profile optimize-utilization
 ```
 >**NOTE:** GKE cluster creation may take as long as 5 minutes or more, so we will take that time to review all of the parameters that we set above.
 The flags we are setting are:
 - `--region` - This is required to create a regional GKE cluster. To create a zonal cluster you would use the `--zone` flag. The value is set to `us-east1` to comply with CloudBees Ops rules.
-- `--node-locations` - Specifies the zone(s) where the worker nodes will run. If not specified then they are spread across 3 random zones withing the cluster region (for regional clusters). We have specified two zones for use with GCP regional persistent disks that only support two zones.
+- `--node-locations` - Specifies the zone(s) where the worker nodes will run. If not specified then they are spread across 3 random zones within the cluster region (for regional clusters). We have specified two zones for use with GCP regional persistent disks, because GCP regional disks are only replicated across two zones.
+- `--num-nodes` - The number of nodes we want initially in each of the cluster's zones. In this case we are defining two zones for the cluster nodes so there will be 2 total nodes across the entire cluster.
 - `--cluster-version` and `--release-channel` - We have specified this flag as we would like to use a non-default GKE version from the **regular** release channel. By using a version later than 1.21.0-gke.1500 we pick up a number of changes to the default values for flags to include using VPC-native as the default network mode.
 - `--machine-type` - The default machine type is an **e2-medium** that has not been as stable for running CloudBees CI workloads as the **n1** machines have been.
-- `--disk-type` and `--disk-size` - The defaults are too large (100gb) and too slow.
+- `--disk-type` and `--disk-size` - The defaults are too large (100gb) and slower that the one we are specifying.
 - `--service-account` - Required to pull the pre-release container images we are using for CloudBees CI from an Ops managed GCR.
 - `--enable-autoscaling` - Autoscaling is not enabled by default and is very easy to enable on GKE via this flag. For AWS EKS you must manually configure and install the Kubernetes Cluster Autoscaler. 
 - `--autoscaling-profile optimize-utilization` - Autoscaling profiles allow you to specify the utilization of available resources for a GKE cluster. The default autoscaling profile is `balanced` and optimizes for minimizing provisioning time to include taking longer to deprovision nodes that no longer have pods that can be evicted. The `optimize-utilization` profile configures the cluster autoscaler to scale down the cluster more aggressively: it can remove more nodes, and remove nodes faster. It also configures GKE to prefer to schedule Pods in nodes that already have high utilization, helping the cluster autoscaler to identify and remove underutilized nodes. This profile will result in better results with the CloudBees CI hibernation feature.
