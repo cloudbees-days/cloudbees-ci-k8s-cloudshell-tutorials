@@ -23,6 +23,7 @@ There are over 100 different flags available for the `clusters create` command a
 ```bsh
 gcloud container --project "REPLACE_GCP_PROJECT" clusters create "REPLACE_GITHUB_USER" \
     --region "us-east1" \
+    --num-nodes=2 \
     --node-locations "us-east1-b","us-east1-c" \
     --cluster-version "1.21.5-gke.1302" --release-channel "regular" \
     --machine-type "n1-standard-4" \
