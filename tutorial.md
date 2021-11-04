@@ -175,6 +175,11 @@ gcloud dns --project=$PROJECT_ID record-sets transaction add $INGRESS_IP --name=
 gcloud dns --project=$PROJECT_ID record-sets transaction execute --zone=$DNS_ZONE
 ```
 
+Finally, you can use the `ping` command to verify that your `CBCI_HOSTNAME` is being directed to the external IP address of your `ingress-nginx` controller:
+```bsh
+ping REPLACE_GITHUB_USER.workshop.cb-sa.io
+```
+
 ## Install CloudBees CI
 
 As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI (and the `--set` parameter, but more about that ahead). Before we run the `helm` command to install CloudBees CI, let's take a look at the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">values file</walkthrough-editor-open-file>. Some things to note include:
