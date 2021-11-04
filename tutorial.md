@@ -87,6 +87,8 @@ helm upgrade --install --wait ingress-nginx ingress-nginx/ingress-nginx \
 - `--wait`: will wait until all Pods, PVCs, Services, and minimum number of Pods of a Deployment, StatefulSet, or ReplicaSet are in a ready state before marking the release as successful.
 - `--create-namespace`: will create the Kubernetes namespace if it doesn't already exist.
 
+Once the install is complete there should be a new Kubernetes `Service` of `LoadBalancer TYPE` in the newly created `ingress-nginx namespace`.
+
 ### TLS for HTTPS
 
 Of course we want web traffic to our CloudBees CI cluster to be secure. However, creating, managing and updating TLS certificates is a lot of work. That is why we will use the cert-manager Kubernetes add-on to automatically issue an X.509 certificate from Lets Encrypt (a non-profit, free, automated, and open certificate authority (CA)) and store it as a Kubernetes **Secret** in your GKE cluster.
