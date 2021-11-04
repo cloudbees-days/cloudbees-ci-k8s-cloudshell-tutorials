@@ -137,13 +137,16 @@ kubectl apply -f k8s/regional-pd-ssd.yml
 
 ## Configure DNS for CloudBees CI
 
+We will use GCP DNS to create a new A record against the `workshop.cb-sa.io` domain, but first we must get the IP address of the load balancer created for when we installed ingress-nginx. Run the following command to assign that IP to an environment variable and print it out:
 
-
+```bsh
+INGRESS_IP=$(kubectl get services -n ingress-nginx | grep LoadBalancer  | awk '{print $4}')
+echo $INGRESS_IP
+```
+Next, we will set a few more environment variables and then use the `gcloud` CLI to add a new DNS record:
 ```bsh
 PROJECT_ID=core-workshop
 DNS_ZONE=workshop-cb-sa
-#get ingress-nginx lb ip
-INGRESS_IP=$(kubectl get services -n ingress-nginx | grep LoadBalancer  | awk '{print $4}')
 CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
 
 gcloud dns --project=$PROJECT_ID record-sets transaction start --zone=$DNS_ZONE
@@ -157,10 +160,43 @@ As mentioned earlier, we will be using a file to specify the chart values to ove
 - `dockerImage`: on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified the `gcloud` command to create our GKE clusters.
 - `CasC`: line 38; it is `enabled` and the `ConfigMapName` is set to `oc-casc-bundle`.
 - `Protocol`: line 61, it is set to `https` - thank you cert-manager.
-- `JavaOpts`: line 89, 
+- `JavaOpts`: line 89 
     - controller provisioning has been configure to delete persistent storage when a managed controller is deleted
     - the Jenkins setup wizard has been disable
-    - the `ManagePermission` and `SystemReadPermission` permissions have been enabled (without a plugin).
-- 
+    - the `ManagePermission` and `SystemReadPermission` permissions have been enabled (without a plugin)
+- `Ingress`: line 159
+    - the `Class` is set to `nginx` to use the ingress-nginx controller we installed earlier
+    - the `cert-manager.io/cluster-issuer` is set to `letsencrypt-prod`; this will trigger the cert-manager add-on we install to create a TLS certificate for our CloudBees CI `Ingress`
+    - under `tls`, `Enable` is set to `true` and note the `SecretName` of `cbci-tls` - this will be the name of the Kubernetes `Secret` that the cert-manager creates with the TLS certificate it retrieves from Let's Encrypt
+- `ExtraVolumes`: line 201, specifies the Kubernetes `ConfigMap` `cbci-oc-init-groovy` to be mounted to the Operations Center `Pod`
+- `ExtraVolumeMounts`: line 212, specified where to mount the `ExtraVolumes`
+- `StorageClass`: line 259, the name specified here, `regional-pd-ssd`, matches the `StorageClass` we created earlier with regional ssd persistent disk
+
+Before we use `helm` to install CloudBees CI, we need to create the `cbci-oc-init-groovy` `ConfigMap` with the contents of <walkthrough-editor-open-file filePath="init_groovy/09-license-activate.groovy">init_groovy/09-license-activate.groovy</walkthrough-editor-open-file>:
+```bsh
+kubectl create ns cbci
+kubectl -n cbci create configmap cbci-oc-init-groovy --from-file=init_groovy/ --dry-run=client -o yaml | kubectl apply -f -
+```
+The command above may look a bit more complicated than it needs to, so let's take a look at it:
+- `create ns`: we need to create the `ConfigMap` in the same name space as CloudBees CI
+- `--from-file=init_groovy/`: this parameter allows you to create a `ConfigMap` from one file or a directory of files. By pointing at a directory, we can add additional init groovy scripts and they will be added to the same `ConfigMap`
+- `--dry-run==client`: We are using this so we can pipe the output to a `kubectl apply` command. `kubectl create` is imperative and will fail if an object with the same name and in the same namespace already exist, but the `apply` command is declarative and just tells Kubernetes the state we want it to be in - so if the `ConfigMap` already exists it will just modify it to match the new one being applied. This is especially useful with automation.
+
+Now that we have created the `ConfigMap` we are now ready to use `helm` to install CloudBees CI:
+```bsh
+helm repo add cloudbees https://charts.cloudbees.com/public/cloudbees
+helm repo update
+CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
+helm upgrade --install --wait cbci cloudbees/cloudbees-core \
+  --set OperationsCenter.HostName=$CBCI_HOSTNAME \
+  --namespace='cbci'  --create-namespace \
+  --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
+  --values ./helm/cbci-values.yml
+``` 
+- First, we add the `cloudbees` helm charts and then update them. 
+- We set the `CBCI_HOSTNAME` environment variable to use in the `helm` command to install CloudBees CI.
+- Finally, we use the `helm upgrade` command with the `--install` flag. Also note, that we are use a combination of `--set` parameters along with the `--values` parameter to override default values for our install.
+
+
 
 

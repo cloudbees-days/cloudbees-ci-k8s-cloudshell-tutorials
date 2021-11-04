@@ -193,8 +193,6 @@ OperationsCenter:
 
   # OperationsCenter.ExtraGroovyConfiguration -- Provides additional init groovy scripts
   # Each key becomes a file in /var/jenkins_config
-  ExtraGroovyConfiguration:
-    z-quickstart-hook.groovy:
   # ExtraGroovyConfiguration:
   #   hello-world.groovy: |
   #     System.out.println('Hello world!')
