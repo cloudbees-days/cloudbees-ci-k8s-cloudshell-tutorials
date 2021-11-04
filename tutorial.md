@@ -57,6 +57,7 @@ Autoscaling profiles allow you to specify the utilization of available resources
 Even though we already create the GKE cluster, we can still update it. Run the following command to update your GKE cluster to use the `optimize-utilization` profile:
 ```bsh
 gcloud container clusters update "REPLACE_GITHUB_USER" \
+    --region "us-east1" \
     --autoscaling-profile optimize-utilization
 ```
 
