@@ -162,7 +162,7 @@ Note that the `Parameters` include `replication-type=regional-pd` and the `Allow
 
 ## Configure DNS for CloudBees CI
 
-We will use GCP DNS to create a new A record against the `workshop.cb-sa.io` domain, but first we must get the IP address of the load balancer created for when we installed ingress-nginx. Run the following command to assign that IP to an environment variable and print it out:
+We will use GCP DNS to create a new A record against the `workshop.cb-sa.io` domain, but first we must get the IP address of the load balancer created for the installed ingress-nginx controller. Run the following command to assign that IP to an environment variable and print it out:
 
 ```bsh
 INGRESS_IP=$(kubectl get services -n ingress-nginx | grep LoadBalancer  | awk '{print $4}')
