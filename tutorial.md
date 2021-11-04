@@ -15,7 +15,7 @@ Having already decided to create a cluster using the Standard mode (instead of A
 - A zonal cluster allows running nodes in single or multiple zones, but only provides a single replica of the control plane running in a single zone.
 - A regional cluster allows running nodes in multiple zones, but also provides multiple replicas of the control plane running in multiple zones.
 
-We will be creating a regional cluster to better simulate a production environment while learning some of the GCP/GKE specific features we need to leverage for a more productive and secure CloudBees CI environment.
+We will be creating a regional cluster to better simulate a production environment while learning some of the GCP/GKE specific features we need to leverage for a more stable and secure CloudBees CI environment.
 
 ### Use the glcoud CLI to create a regional cluster
 
