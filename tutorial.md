@@ -96,6 +96,8 @@ Once the install is complete there should be a new Kubernetes `Service` of `Load
 kubectl get services -n ingress-nginx ingress-nginx-controller
 ```
 
+Note that the `ingress-nginx-controller` has an `EXTERNAL-IP`.
+
 ### TLS for HTTPS
 
 Of course we want web traffic to our CloudBees CI cluster to be secure. However, creating, managing and updating TLS certificates is a lot of work. That is why we will use the cert-manager Kubernetes add-on to automatically issue an X.509 certificate from Lets Encrypt (a non-profit, free, automated, and open certificate authority (CA)) and store it as a Kubernetes **Secret** in your GKE cluster.
