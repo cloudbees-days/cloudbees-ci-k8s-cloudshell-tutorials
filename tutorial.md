@@ -261,7 +261,7 @@ We will now configure the `cjoc serviceAccount` (the `serviceAccount` that the `
 ```bsh
 gcloud iam service-accounts add-iam-policy-binding core-cloud-run@REPLACE_GCP_PROJECT.iam.gserviceaccount.com \
     --role roles/iam.workloadIdentityUser \
-    --member "serviceAccount:REPLACE_GCP_PROJECT.svc.id.goog[cbci/jenkins]"
+    --member "serviceAccount:REPLACE_GCP_PROJECT.svc.id.goog[cbci/cjoc]"
 ```
 Next, we will add an annotation to the `cjoc ServiceAccount` by running the following command:
 ```bsh

@@ -113,3 +113,10 @@ gcloud iam service-accounts add-iam-policy-binding core-cloud-run@core-workshop.
 kubectl annotate serviceaccount \
     --namespace cbci cjoc \
     iam.gke.io/gcp-service-account=core-cloud-run@core-workshop.iam.gserviceaccount.com
+
+CBCI_HOSTNAME=kmadel.workshop.cb-sa.io
+helm upgrade --install --wait cbci cloudbees/cloudbees-core \
+  --set OperationsCenter.HostName=$CBCI_HOSTNAME \
+  --namespace='cbci'  --create-namespace \
+  --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
+  --values ./helm/cbci-values.yml
