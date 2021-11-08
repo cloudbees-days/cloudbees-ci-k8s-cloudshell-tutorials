@@ -197,7 +197,14 @@ ping REPLACE_GITHUB_USER.workshop.cb-sa.io
 
 ## Install CloudBees CI
 
-As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI (and the `--set` parameter, but more about that ahead). Before we run the `helm` command to install CloudBees CI, let's take a look at the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">values file</walkthrough-editor-open-file>. Some things to note include:
+As mentioned earlier, we will be using a file to specify the chart values to override for our installation of CloudBees CI (and the `--set` parameter, but more about that ahead). 
+
+You can generate a values yaml file for the CloudBees CI Helm chart by running the following command:
+```bsh
+helm show values cloudbees/cloudbees-core
+```
+
+But a let's take a look at the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">values file</walkthrough-editor-open-file> that has already been created for you for this lab. Some things to note include:
 - **`dockerImage`:** on line 35 notice how the `dockerImage` is coming from a GCP Container Registry. And more specifically, from a CloudBees Ops registry that is not public and requires a Google IAM service account that has been provided access - in this case, the `gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com` that we specified in the `gcloud` command to create our GKE clusters has the necessary permissions.
 - **`CasC`:** line 38; it is `enabled` and the `ConfigMapName` is set to `oc-casc-bundle`. We will create that `ConfigMap` Kubernetes resource below before we install CloudBees CI.
 - **`Protocol`:** line 61, it is set to `https` - thank you cert-manager.
@@ -241,7 +248,7 @@ helm upgrade --install --wait cbci cloudbees/cloudbees-core \
 ``` 
 - First, we add the `cloudbees` helm charts and then update them. 
 - We set the `CBCI_HOSTNAME` environment variable to use in the `helm` command to install CloudBees CI.
-- Finally, we use the `helm upgrade` command with the `--install` flag. Also note, that we are use a combination of `--set` parameters along with the `--values` parameter to override default values for our install.
+- Finally, we use the `helm upgrade` command with the `--install` flag. Also note, that we are use a combination of `--set` parameters along with the `--values` parameter to override default chart values for our install.
 
 Run the following command to check that the `cbci-oc-init-groovy` `ConfigMap` was created in the `/var/jenkins_config/init.groovy.d/` directory of the `cjoc` container:
 ```bsh
@@ -346,3 +353,6 @@ helm upgrade --install --wait cbci cloudbees/cloudbees-core \
   --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
   --values ./helm/cbci-values.yml
 ```
+
+## Provisioning Controllers in a Different Namespace
+Leveraging individual Kubernetes `namespaces` for managed controllers provides many of the same benefits as distributing you software automation workload across multiple managed controllers. It provides enhanced security and eases the management of resource utilization.
