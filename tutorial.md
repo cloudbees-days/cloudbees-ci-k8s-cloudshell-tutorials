@@ -259,9 +259,9 @@ The Operations Center for your CloudBees CI cluster should be running or startin
 
 Don't **Create First Admin User**. In the next section we will update the OC CasC bundle to create a user for us and retrieve the [password from the GCP Secrets Manager](https://console.cloud.google.com/security/secret-manager/secret/cbci-oc-admin-password/versions?project=core-workshop).
 
-## Integrating GCP Services via Workload Identity
+## Setting Up Workload Identity
 
-Sometimes you need to integrate other GCP services with CloudBees CI controllers and/or agents. We need to integrate with the GCP Secrets Manager so we can inject those secrets into our CloudBees CI CasC bundles. Workload Identity for GKE allows us to bind GCP IAM Service Accounts (GSA) to Kubernetes Service Accounts (KSA) in a specific Kubernetes Namespace. In addition to configuring Workload Identity for our GKE clusters, we will also need to install the Secrets Store CSI driver for Kubernetes secrets and the GCP provider that integrates the GCP Secrets Manager.
+Workload Identity for GKE allows us to bind GCP IAM Service Accounts (GSA) to Kubernetes Service Accounts (KSA) in a specific Kubernetes Namespace. This allows us to integrate other GCP services with Kubernetes services, such as CloudBees CI. 
 
 ### Configure Workload Identity
 We will now configure the `cjoc serviceAccount` (the `serviceAccount` that the `cjoc pod` is running under) in the `cbci namespace` to be bound to the `core-cloud-run@REPLACE_GCP_PROJECT.iam.gserviceaccount.com` GCP IAM service account - which has been given the necessary permissions to retrieve the secrets we need from the GCP secrets manager. First we will create an IAM policy binding between the Kubernetes `cjoc ServiceAccount` and the GCP IAM service account by running the following command:
@@ -276,6 +276,10 @@ kubectl annotate serviceaccount \
     --namespace cbci cjoc \
     iam.gke.io/gcp-service-account=core-cloud-run@REPLACE_GCP_PROJECT.iam.gserviceaccount.com
 ```
+
+## Integrating GCP Secrets Manager with CloudBees CI CasC
+
+Sometimes you need to integrate other GCP services with CloudBees CI controllers and/or agents. We need to integrate with the GCP Secrets Manager so we can inject those secrets into our CloudBees CI CasC bundles. Workload Identity for GKE allows us to bind GCP IAM Service Accounts (GSA) to Kubernetes Service Accounts (KSA) in a specific Kubernetes Namespace. In addition to configuring Workload Identity for our GKE clusters, we will also need to install the Secrets Store CSI driver for Kubernetes secrets and the GCP provider that integrates the GCP Secrets Manager.
 
 ### Install Secrets Store CSI driver
 
