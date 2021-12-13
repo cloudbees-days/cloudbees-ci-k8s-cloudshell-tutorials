@@ -8,7 +8,9 @@ The official Kubernetes documentation description of `Namespaces`:
 
 "In Kubernetes, namespaces are the fundamental unit of organization of most objects. They also form the fundamental unit of isolation and security in Kubernetes. Most policies and isolation objects operate at the namespace level, such as RBAC roles, secrets, service accounts, resource quotas, and network policies."
 
-However, before we start provisioning controllers in `Namespaces` we review the roles and service accounts that are part of the standard CloudBees CI Helm install.
+However, before we start provisioning controllers in `Namespaces` we will create a GKE cluster and install CloudBees CI with Helm and **Kustomize** as a Helm post renderer.
+
+Then we will review the roles and service accounts that are part of the standard CloudBees CI Helm install.
 
 <walkthrough-tutorial-duration duration="100"></walkthrough-tutorial-duration>
 
