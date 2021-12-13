@@ -4,6 +4,7 @@ resources:
 - k8s/networkpolicies/deny-all-ingress.yml
 - k8s/networkpolicies/allow-ingress-nginx.yml
 - k8s/networkpolicies/controller-cjoc-ingress.yml
+- k8s/networkpolicies/agent-controller-ingress.yml
 - chart.yaml
 patches:
   - path: patches/jenkins-sa-patch.yaml
