@@ -202,5 +202,14 @@ curl --user "admin:$CJOC_ADMIN_API_TOKEN" -XPOST \
               --data-binary @./controller-a-item.yaml -H 'Content-Type:text/yaml'
 ```
 
+## Clean Up
 
+Run the following commands to clean everything up:
+
+```bsh
+helm uninstall controller-a -n controller-a 
+kubectl delete ns controller-a
+helm uninstall cbci -n cbci
+kubectl delete ns cbci
+```
 
