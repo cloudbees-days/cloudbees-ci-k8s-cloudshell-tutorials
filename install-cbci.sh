@@ -50,7 +50,7 @@ gcloud iam service-accounts add-iam-policy-binding core-cloud-run@REPLACE_GCP_PR
     --role roles/iam.workloadIdentityUser \
     --member "serviceAccount:REPLACE_GCP_PROJECT.svc.id.goog[cbci/cjoc]"
 
-chmod +x kustomization-wrapper.sh
+chmod +x kustomize-wrapper.sh
 
 CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
 helm upgrade --install --wait cbci cloudbees/cloudbees-core \

@@ -25,7 +25,9 @@ chmod +x install-cbci.sh
 
 ## Installing CloudBees CI with Kustomize
 
-We saw in Module 1 how you can override certain parameters of a Helm chart by specifying them in a `values.yaml` file, as we have done in the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">`k8s/helm/cbci-values.yml`</walkthrough-editor-open-file> file. However, there will almost always be certain configuration values you want to override, configuration you want to add and/or additional Kubernetes resources you will want to create as part of a Helm install. Luckily, Helm supports a concept of **post rendering** allowing you "to use tools like kustomize to apply configuration changes without the need to fork a public chart or requiring chart maintainers to specify every last configuration option for a piece of software." If you take a look at the <walkthrough-editor-open-file filePath="install-cbci.sh">`install-cbci.sh`</walkthrough-editor-open-file> script we used to create your GKE cluster and install the CloudBees CI Helm chart (among other), you will see that we are using the <walkthrough-editor-open-file filePath="kustomize-wrapper.sh">`kustomize-wrapper.sh`</walkthrough-editor-open-file> script as a `helm` `--post-renderer`.
+We saw in Module 1 how you can override certain parameters of a Helm chart by specifying them in a `values.yaml` file, as we have done in the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">`k8s/helm/cbci-values.yml`</walkthrough-editor-open-file> file. However, there will almost always be certain configuration values you want to override, configuration you want to add and/or additional Kubernetes resources you will want to create as part of a Helm install. Luckily, Helm supports a concept of **post rendering** allowing you "to use tools like kustomize to apply configuration changes without the need to fork a public chart or requiring chart maintainers to specify every last configuration option for a piece of software." 
+
+If you take a look at the <walkthrough-editor-open-file filePath="install-cbci.sh">`install-cbci.sh`</walkthrough-editor-open-file> script we used to create your GKE cluster and install the CloudBees CI Helm chart (among other), you will see that we are using the <walkthrough-editor-open-file filePath="kustomize-wrapper.sh">`kustomize-wrapper.sh`</walkthrough-editor-open-file> script as a `helm` `--post-renderer`.
 
 The configuration for the `kustomize-wrapper.sh` script is found in the <walkthrough-editor-open-file filePath="kustomization.yaml">`kustomization.yaml`</walkthrough-editor-open-file> file and includes:
 
@@ -33,8 +35,14 @@ The configuration for the `kustomize-wrapper.sh` script is found in the <walkthr
 - `resources`: will create additional Kubernetes resources to include:
   - the `letsencrypt-prod` `ClusterIssuer` for cert manager to provide a tls certificate for our CloudBees CI install.
   - the `regional-pd-ssd` `StorageClass` which is the `StorageClass` used by CJOC and managed controllers.
-- `transformers`: will transform resources create by the `helm install`.
+- `transformers`: will transform resources create by the `helm install` to add some `labels` to the CJOC and hibernation `pods` with the <walkthrough-editor-open-file filePath="transformers/pod-labels.yaml">`transformers/pod-labels.yaml`</walkthrough-editor-open-file> file. We will use this `label` with a Kubernetes network policy we will create in another lesson.
 - `patches`: will patch resources create by the `helm install`. It allows us to add the GKE workload identity annotation to the `jenkins` `serviceaccount`.
+
+Let's take a look at the **patched** `jenkins` `serviceaccount`:
+
+```bsh
+kubectl get sa -n cbci jenkins -o yaml
+```
 
 ## CloudBees CI RBAC
 
