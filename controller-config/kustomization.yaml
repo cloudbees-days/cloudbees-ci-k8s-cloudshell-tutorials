@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- k8s/networkpolicies/deny-all-ingress.yml
+- k8s/networkpolicies/allow-ingress-nginx.yml
+- k8s/networkpolicies/controller-cjoc-ingress.yml
+- chart.yaml
+patches:
+  - path: patches/jenkins-sa-patch.yaml
+    target:
+      kind: ServiceAccount
+      name: jenkins
+  - path: patches/controller-namespace-label-patch.yaml
+    target:
+      kind: Namespace

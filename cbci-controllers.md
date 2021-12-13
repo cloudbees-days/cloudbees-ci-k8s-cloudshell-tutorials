@@ -70,6 +70,36 @@ kubectl get -n cbci role cjoc-agents -o yaml
 
 There are a lot fewer Kubernetes RBAC permissions required for managed controllers than there is for CJOC.
 
+## Kubernetes Network Policies
+
+"NetworkPolicies are an application-centric construct which allow you to specify how a pod is allowed to communicate with various network "entities" (we use the word "entity" here to avoid overloading the more common terms such as "endpoints" and "services", which have specific Kubernetes connotations) over the network." By default, pods are non-isolated and they will accept traffic from any source. However, in a multi-tenant CloudBees CI environment on Kubernetes you may not want to allow:
+
+- agent `pods` to be accessible from the internet.
+- agent `pods` not able to access or be accessed by other agent `pods`, other managed controller `pods` and the CJOC `pod`.
+- managed controller `pods` not able to access or be accessed by other managed controller `pods`.
+- the CJOC `pod` must be able to access and be accessed by all managed controller `pods`.
+- the CJOC, hibernation and managed controller `pods` must be accessible by the `ingress-nginx` `controller`.
+
+But before we enable any specific network access we will disable all `Ingress` for the CloudBees CI `namespace` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/deny-all-ingress.yml">k8s/network-policies/deny-all-ingress.yml</walkthrough-editor-open-file> file:
+
+```bsh
+kubectl apply -f k8s/network-policies/deny-all-ingress.yml
+```
+
+After running that command try to access your Operations Center in your browser and it should fail. So next, we will add a network policy that will allow the `ingress-nginx` `controller` to access (Ingress) any `pod` that is labelled with `networking/allow-internet-access: "true"` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/allow-ingress-nginx.yml">k8s/network-policies/allow-ingress-nginx.yml</walkthrough-editor-open-file> file:
+
+```bsh
+kubectl apply -f k8s/network-policies/allow-ingress-nginx.yml
+```
+
+Now try to access your Operations Center in your browser and it should load as expected.
+
+Finally, we need to allow managed controllers in the CJOC `namespace` and any other managed controller `namespace` to be able to access the CJOC `pod` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/cjoc-controller-ingress.yml">k8s/network-policies/cjoc-controller-ingress.yml</walkthrough-editor-open-file> file:
+
+```bsh
+kubectl apply -f k8s/network-policies/cjoc-controller-ingress.yml
+```
+
 ## Create a Managed Controller Namespace and RBAC Configuration with Helm
 
 The CloudBees CI Helm chart provides a values parameters configuration that will create all the necessary Kubernetes objects for running a managed controller in its own Kubernetes `namespace`. Before we run the `helm` command, let's take a look at the  <walkthrough-editor-open-file filePath="helm/cbci-values.yml">helm/controller-values.yml</walkthrough-editor-open-file> file. Some key differences between the `controller-values.yml` and the `cbci-values.yml` include:
@@ -79,15 +109,17 @@ The CloudBees CI Helm chart provides a values parameters configuration that will
 - `RBAC.installCluster` is commented out and defaults to `false`. This role is only useful for Operations Center to list available `storageclasses` in the Managed Controller provisioning UI, so there is no reason to enable it for a controller specific `namespace`.
 
 ```bsh
+cd controller-config
+chmod +x kustomize-wrapper.sh
 CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
 helm upgrade --install --wait controller-a cloudbees/cloudbees-core \
   --set OperationsCenter.HostName=$CBCI_HOSTNAME \
   --namespace='controller-a'  --create-namespace \
   --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
-  --values ./helm/controller-values.yml
+  --values ./helm/controller-values.yml --post-renderer ./kustomize-wrapper.sh
 ```
 
-## Kubernetes Network Policies
+Once that completes, we will create a new managed controller in the `controller-a` `namespace.
 
 
 
