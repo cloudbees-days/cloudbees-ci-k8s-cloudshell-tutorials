@@ -55,6 +55,11 @@ Note the `annotation` for workload identity is included on the `jenkins` `servic
     iam.gke.io/gcp-service-account: core-cloud-run@core-workshop.iam.gserviceaccount.com
 ```
 
+Next, navigation to your CloudBees CI Operations Center:
+
+```bsh
+echo https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/
+```
 
 ## Kubernetes Network Policies
 
@@ -72,6 +77,7 @@ But before we enable any specific network access we will disable all `Ingress` f
 
 ```bsh
 kubectl apply -f k8s/network-policies/deny-all-ingress.yml
+echo https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/
 ```
 
 After running that command try to access your Operations Center in your browser and it should fail with a **504 Gateway Time-out** fron the `ingress-nginx` `controller`. That is because the `ingress-nginx` `controller` `pod` is denied **Ingress** to the CJOC `pod`.
@@ -81,6 +87,7 @@ So next, we will add a network policy that will allow the `ingress-nginx` `contr
 
 ```bsh
 kubectl apply -f k8s/network-policies/allow-ingress-nginx.yml
+echo https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/
 ```
 
 Now try to access your Operations Center in your browser and it should load as expected.
