@@ -30,8 +30,32 @@ By default, with `rbac` and `hibernation` enabled, the CloudBees CI Helm chart c
 ```bsh
 kubectl get --namespace cbci serviceaccounts
 ```
+Let's take a look at the `cjoc-role-binding` `RoleBinding`:
 
+```bsh
+kubectl get -n cbci rolebinding cjoc-role-binding -o yaml
+```
+Note that there is no `namespace` specified for the `cjoc` `subjects` entry. When no `namespace` is specified for a `ServiceAccount` `subjects` entry, it will default to the `namespace` of the `RoleBinding` - in this case `cbci`.
 
+Now let's take a look at the `cjoc-master-management` `role` being bound to the `cjoc` `serviceaccount`:
+
+```bsh
+kubectl get -n cbci role cjoc-master-management -o yaml
+```
+
+Next we will take a look at the `cjoc-master-role-binding`:
+
+```bsh
+kubectl get -n cbci rolebinding cjoc-master-role-binding -o yaml
+```
+
+Note that it is binding the `cjoc-agents` `role` to the `jenkins` `ServiceAccount` in the `cbci` `namespace`. So let's take a look at the `cjoc-agents` `role` and compare it to the `cjoc-master-management` `role` we looked at above:
+
+```bsh
+kubectl get -n cbci role cjoc-agents -o yaml
+```
+
+There are a lot fewer Kubernetes RBAC permissions required for managed controllers than there is for CJOC.
 
 ## Create a Managed Controller Namespace and RBAC Configuration with Helm
 
