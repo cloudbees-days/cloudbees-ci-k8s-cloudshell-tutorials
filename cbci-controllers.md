@@ -170,7 +170,7 @@ The CloudBees CI Helm chart provides a values parameters configuration that will
 cd controller-config
 chmod +x kustomize-wrapper.sh
 CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
-helm upgrade --install --wait controller-a cloudbees/cloudbees-core \
+helm upgrade --install controller-a --wait controller-a cloudbees/cloudbees-core \
   --set OperationsCenter.HostName=$CBCI_HOSTNAME \
   --namespace='controller-a'  --create-namespace \
   --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
