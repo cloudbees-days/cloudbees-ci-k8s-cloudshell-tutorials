@@ -211,5 +211,6 @@ helm uninstall controller-a -n controller-a
 kubectl delete ns controller-a
 helm uninstall cbci -n cbci
 kubectl delete ns cbci
+
 ```
 
