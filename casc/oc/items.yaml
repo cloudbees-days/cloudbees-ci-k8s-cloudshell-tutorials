@@ -10,8 +10,6 @@ items:
     displayName: ops
     name: ops
     properties:
-    - configurationAsCode:
-        bundle: ops
     - healthReporting:
         enabled: true
     configuration:
