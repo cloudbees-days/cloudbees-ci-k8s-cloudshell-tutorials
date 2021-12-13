@@ -19,13 +19,13 @@ If you already have a GKE cluster with CloudBees CI (and supporting tools) insta
 If you are starting with this module then you will need to create a GKE cluster and install CloudBees CI (with supporting tools) with the following command:
 
 ```bsh
-chmod +x cbci-install.sh
-./cbci-install.sh
+chmod +x install-cbci.sh
+./install-cbci.sh
 ```
 
-### Installing CloudBees CI with Kustomize
+## Installing CloudBees CI with Kustomize
 
-We saw in Module 1 how you can override certain parameters of a Helm chart by specifying them in a `values.yaml` file, as we have done in the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">`k8s/helm/cbci-values.yml`</walkthrough-editor-open-file> file. However, there will almost always be certain configuration values you want to override, configuration you want to add and/or additional Kubernetes resources you will want to create as part of a Helm install. Luckily, Helm supports a concept of **post rendering** allowing you "to use tools like kustomize to apply configuration changes without the need to fork a public chart or requiring chart maintainers to specify every last configuration option for a piece of software." If you take a look at the <walkthrough-editor-open-file filePath="cbci-install.sh">`cbci-install.sh`</walkthrough-editor-open-file> script we used to create your GKE cluster and install the CloudBees CI Helm chart (among other), you will see that we are using the <walkthrough-editor-open-file filePath="kustomize-wrapper.sh">`kustomize-wrapper.sh`</walkthrough-editor-open-file> script as a `helm` `--post-renderer`.
+We saw in Module 1 how you can override certain parameters of a Helm chart by specifying them in a `values.yaml` file, as we have done in the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">`k8s/helm/cbci-values.yml`</walkthrough-editor-open-file> file. However, there will almost always be certain configuration values you want to override, configuration you want to add and/or additional Kubernetes resources you will want to create as part of a Helm install. Luckily, Helm supports a concept of **post rendering** allowing you "to use tools like kustomize to apply configuration changes without the need to fork a public chart or requiring chart maintainers to specify every last configuration option for a piece of software." If you take a look at the <walkthrough-editor-open-file filePath="install-cbci.sh">`install-cbci.sh`</walkthrough-editor-open-file> script we used to create your GKE cluster and install the CloudBees CI Helm chart (among other), you will see that we are using the <walkthrough-editor-open-file filePath="kustomize-wrapper.sh">`kustomize-wrapper.sh`</walkthrough-editor-open-file> script as a `helm` `--post-renderer`.
 
 The configuration for the `kustomize-wrapper.sh` script is found in the <walkthrough-editor-open-file filePath="kustomization.yaml">`kustomization.yaml`</walkthrough-editor-open-file> file and includes:
 
