@@ -175,6 +175,7 @@ helm upgrade --install --wait controller-a cloudbees/cloudbees-core \
   --namespace='controller-a'  --create-namespace \
   --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
   --values ./helm/controller-values.yml --post-renderer ./kustomize-wrapper.sh
+kubectl label ns controller-a com.cloudbees.ci.type=controller
 ```
 
 Once that completes, run the following command to see all the Kubernetes resources created in the `controller-a` `namespace`:
