@@ -232,10 +232,11 @@ Master:
   # Master.JavaOpts -- Additional Java options to pass to managed masters. For example, setting up a JMX port
   JavaOpts: 
     -Duser.timezone="America/New_York"
-    -Dcom.cloudbees.opscenter.client.casc.ConfigurationUpdaterTask.recurrencePeriod=120
+    -Dcom.cloudbees.opscenter.client.casc.ConfigurationUpdaterTask.recurrencePeriod=60
     -Dcom.cloudbees.analytics.gatherer.Sender.disabled=true
     -Djenkins.security.ManagePermission=true
     -Djenkins.security.SystemReadPermission=true
+    -Dcasc.merge.strategy=override
 
 # Agent options
 Agents:

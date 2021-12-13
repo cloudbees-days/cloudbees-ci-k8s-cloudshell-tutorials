@@ -82,9 +82,9 @@ The CloudBees CI Helm chart provides a values parameters configuration that will
 CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
 helm upgrade --install --wait controller-a cloudbees/cloudbees-core \
   --set OperationsCenter.HostName=$CBCI_HOSTNAME \
-  --namespace='controller-a'  \
+  --namespace='controller-a'  --create-namespace \
   --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
-  --values ./helm/controllers-values.yml
+  --values ./helm/controller-values.yml
 ```
 
 ## Kubernetes Network Policies
