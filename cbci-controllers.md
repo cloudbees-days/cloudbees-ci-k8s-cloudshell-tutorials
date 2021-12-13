@@ -186,7 +186,8 @@ kubectl api-resources --verbs=list --namespaced -o name \
 
 Now, we will create a new managed controller in the `controller-a` `namespace` using the CloudBees CI CasC HTTP API. But first we must create an API token for your CloudBees CI `admin` user:
 
-1. Navigate to Operations Center, ensure that you are logged in as `admin`, and click the 
+1. Navigate to Operations Center, ensure that you are logged in as `admin`, and click the **Admin** link in the top right corner and then click **Configure**.
+2. Click on the **Add new Token** button, name it `cbci-k8s-workshop`, click the **Generate** button and copy the value.
 2. Back in the Google Cloud Shell paste the value of the API token to the following command:
 
 ```bsh
@@ -197,7 +198,7 @@ CJOC_ADMIN_API_TOKEN=
 
 ```bsh
 curl --user "admin:$CJOC_ADMIN_API_TOKEN" -XPOST \
-              https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/casc-items/create-items?path=/$GitHubApp \
+              https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/casc-items/create-items \
               --data-binary @./controller-a-item.yaml -H 'Content-Type:text/yaml'
 ```
 
