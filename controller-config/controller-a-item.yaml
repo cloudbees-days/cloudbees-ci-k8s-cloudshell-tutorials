@@ -1,0 +1,22 @@
+removeStrategy:
+  rbac: SYNC
+  items: NONE
+items:
+- kind: folder
+  name: a-team
+  items:
+  - kind: managedController
+    name: controller-a
+    properties:
+    - healthReporting:
+        enabled: true
+    - configurationAsCode:
+        bundle: base
+    configuration:
+      kubernetes:
+        memory: 4000
+        cpus: 1.0
+        clusterEndpointId: default
+        disk: 10
+        domain: controller-a
+        namespace: controller-a
