@@ -91,7 +91,9 @@ There are a lot fewer Kubernetes RBAC permissions required for managed controlle
 
 ## Kubernetes Network Policies
 
-"NetworkPolicies are an application-centric construct which allow you to specify how a pod is allowed to communicate with various network "entities" (we use the word "entity" here to avoid overloading the more common terms such as "endpoints" and "services", which have specific Kubernetes connotations) over the network." By default, pods are non-isolated and they will accept traffic from any source. However, in a multi-tenant CloudBees CI environment on Kubernetes you may not want to allow:
+"NetworkPolicies are an application-centric construct which allow you to specify how a pod is allowed to communicate with various network "entities" (we use the word "entity" here to avoid overloading the more common terms such as "endpoints" and "services", which have specific Kubernetes connotations) over the network." By default, pods are non-isolated and they will accept traffic from any source.
+
+In a multi-tenant CloudBees CI environment on Kubernetes you may not want to allow:
 
 - agent `pods` to be accessible from the internet.
 - agent `pods` not able to access or be accessed by other agent `pods`, other managed controller `pods` and the CJOC `pod`.
@@ -105,7 +107,10 @@ But before we enable any specific network access we will disable all `Ingress` f
 kubectl apply -f k8s/network-policies/deny-all-ingress.yml
 ```
 
-After running that command try to access your Operations Center in your browser and it should fail. So next, we will add a network policy that will allow the `ingress-nginx` `controller` to access (Ingress) any `pod` that is labelled with `networking/allow-internet-access: "true"` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/allow-ingress-nginx.yml">k8s/network-policies/allow-ingress-nginx.yml</walkthrough-editor-open-file> file:
+After running that command try to access your Operations Center in your browser and it should fail with a **504 Gateway Time-out** fron the `ingress-nginx` `controller`. That is because the `ingress-nginx` `controller` `pod` is denied **Ingress** to the CJOC `pod`.
+
+
+So next, we will add a network policy that will allow the `ingress-nginx` `controller` to access (Ingress) any `pod` that is labelled with `networking/allow-internet-access: "true"` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/allow-ingress-nginx.yml">k8s/network-policies/allow-ingress-nginx.yml</walkthrough-editor-open-file> file (a `label` that we added to the CJOC and hibernation service `pods` with Kustomize):
 
 ```bsh
 kubectl apply -f k8s/network-policies/allow-ingress-nginx.yml
@@ -113,10 +118,16 @@ kubectl apply -f k8s/network-policies/allow-ingress-nginx.yml
 
 Now try to access your Operations Center in your browser and it should load as expected.
 
-Finally, we need to allow managed controllers in the CJOC `namespace` and any other managed controller `namespace` to be able to access the CJOC `pod` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/cjoc-controller-ingress.yml">k8s/network-policies/cjoc-controller-ingress.yml</walkthrough-editor-open-file> file:
+Next, navigate to the **Manage** screen for the **operations-ops** managed controller and we will see that CJOC thinks it is disconnected. We need to allow managed controllers in the CJOC `namespace` and any other managed controller `namespace` to be able to access the CJOC `pod` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/cjoc-controller-ingress.yml">k8s/network-policies/cjoc-controller-ingress.yml</walkthrough-editor-open-file> file:
 
 ```bsh
 kubectl apply -f k8s/network-policies/cjoc-controller-ingress.yml
+```
+
+Finally, we need to allow CJOC to access the **operations-ops** managed controller `pod` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/controller-cjoc-ingress.yml">k8s/network-policies/controller-cjoc-ingress.yml</walkthrough-editor-open-file> file:
+
+```bsh
+kubectl apply -f k8s/network-policies/controller-cjoc-ingress.yml
 ```
 
 ## Create a Managed Controller Namespace and RBAC Configuration with Helm
