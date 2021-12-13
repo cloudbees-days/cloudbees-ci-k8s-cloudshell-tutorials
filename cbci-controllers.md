@@ -42,13 +42,13 @@ The configuration for the `kustomize-wrapper.sh` script is found in the <walkthr
 - `transformers`: will transform resources create by the `helm install` to add some `labels` to the CJOC and hibernation `pods` with the <walkthrough-editor-open-file filePath="transformers/pod-labels.yaml">`transformers/pod-labels.yaml`</walkthrough-editor-open-file> file. We will use this `label` with a Kubernetes network policy we will create in another lesson.
 - `patches`: will patch resources create by the `helm install`. It allows us to add the GKE workload identity annotation to the `jenkins` `serviceaccount`.
 
-Let's take a look at the **patched** `jenkins` `serviceaccount`:
+Let's take a look at the <walkthrough-editor-open-file filePath="patches/jenkins-sa-patch.yaml">**patched**</walkthrough-editor-open-file> `jenkins` `serviceaccount`:
 
 ```bsh
 kubectl get sa -n cbci jenkins -o yaml
 ```
 
-Note the `annotation` for workload identity: 
+Note the `annotation` for workload identity is included on the `jenkins` `serviceaccount` as part of the Hem `install`: 
 
 ```yaml
   annotations:
