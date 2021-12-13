@@ -7,3 +7,49 @@ jenkins:
       users:
        - id: admin
          password: "${cbciCjocAdminPassword}"
+notificationConfiguration:
+  enabled: true
+  router: "operationsCenter"
+cloudBeesCasCServer:
+  defaultBundle: "base"
+security:
+  anonymizeSupportBundle:
+    enabled: false
+  apiToken:
+    creationOfLegacyTokenEnabled: false
+    tokenGenerationOnCreationEnabled: false
+    usageStatisticsEnabled: true
+  sSHD:
+    port: -1
+  securitySettingsEnforcement:
+    global:
+      realmAndAuthorization:
+        canCustomMapping: false
+        canOverride: true
+        defaultMappingFactory: "restrictedEquivalentRAMF"
+masterprovisioning:
+  dockerImageDefinitionConfiguration:
+  kubernetes:
+    clusterEndpoints:
+    - id: "default"
+      ingressClass: "nginx"
+      jenkinsUrl: "http://cjoc.cbci.svc.cluster.local/cjoc/"
+      name: "kubernetes"
+    cpus: "1.0"
+    disk: 20
+    fsGroup: "1000"
+    memory: 4096
+    yaml: |-
+      kind: "StatefulSet"
+      spec:
+        template:
+          metadata:
+            labels:
+              networking/allow-internet-access: "true"
+unclassified:
+  cascAutoControllerProvisioning:
+    provisionControllerOnCreation: true 
+    fireAndForget: true
+    initialDelay: 15
+    timeout: 10
+    waitFor: 5

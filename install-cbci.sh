@@ -52,6 +52,9 @@ gcloud iam service-accounts add-iam-policy-binding core-cloud-run@REPLACE_GCP_PR
 
 chmod +x kustomize-wrapper.sh
 
+rm -f casc/oc/jenkins.yaml
+mv casc/oc/jenkins.yaml.updated casc/oc/jenkins.yaml
+
 CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
 helm upgrade --install --wait cbci cloudbees/cloudbees-core \
   --set OperationsCenter.HostName=$CBCI_HOSTNAME \
