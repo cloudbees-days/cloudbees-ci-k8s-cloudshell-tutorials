@@ -1,0 +1,9 @@
+jenkins:
+  authorizationStrategy: "cloudBeesRoleBasedAccessControl"
+  securityRealm:
+    local:
+      allowsSignup: false
+      enableCaptcha: false
+      users:
+       - id: admin
+         password: "${cbciCjocAdminPassword}"

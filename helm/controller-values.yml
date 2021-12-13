@@ -10,6 +10,28 @@ OperationsCenter:
   # OperationsCenter.Enabled -- Disable for particular use case like setting up namespaces to host masters only
   Enabled: false
 
+  # OperationsCenter.HostName -- The hostname used to access Operations Center through the ingress controller.
+  HostName: null
+
+  # OperationsCenter.Protocol -- the protocol used to access CJOC. Possible values are http/https.
+  Protocol: https
+
+  Ingress:
+    # OperationsCenter.Ingress.Class -- Ingress class to use for OC and MM ingresses
+    # Should be set to the same value as nginx-ingress.controller.ingressClass if enabled
+    Class: nginx
+    # OperationsCenter.Ingress.Annotations -- annotations to put on Ingress object
+    Annotations:
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: 'true'
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    tls:
+      # OperationsCenter.Ingress.tls.Enable -- Set this to true in order to enable TLS on the ingress record
+      Enable: true
+      SecretName: cbci-tls
+      Host: jenkins.cluster.local
+
 # Master options
 Master:
   # Master.Enabled -- Whether to create the resources required to schedule masters.
@@ -20,7 +42,7 @@ Master:
   # Docker image inserted in Operations Center automatically
   Image:
     # Master.Image.dockerImage -- Used to override the default docker image
-    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/core-mm:2.303.3.3
+    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/core-mm:2.319.1.5
   # Master.JavaOpts -- Additional Java options to pass to managed masters. For example, setting up a JMX port
   JavaOpts: 
     -Duser.timezone="America/New_York"
@@ -35,7 +57,7 @@ Agents:
   Enabled: true
   Image:
     # Agents.Image.dockerImage -- Used to override the default docker image used for agents
-    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/agent:2.303.3.3
+    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/agent:2.319.1.5
 
 
 Persistence:

@@ -32,6 +32,7 @@ gcloud container clusters create "REPLACE_GITHUB_USER" \
     --service-account "gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com" \
     --enable-autoscaling --min-nodes "0" --max-nodes "4" \
     --autoscaling-profile optimize-utilization \
+    --enable-dataplane-v2 \
     --workload-pool "core-workshop.svc.id.goog"
 ```
 >**NOTE:** GKE cluster creation may take as long as 5 minutes or more, so we will take that time to review all of the parameters that we set above.
@@ -45,6 +46,7 @@ The flags we are setting are:
 - **`--service-account`** - Required to pull the pre-release container images we are using for CloudBees CI from an Ops managed GCR.
 - **`--enable-autoscaling`** - Autoscaling is not enabled by default and is very easy to enable on GKE via this flag. For AWS EKS you must manually configure and install the Kubernetes Cluster Autoscaler. 
 - **`--autoscaling-profile optimize-utilization`** - Autoscaling profiles allow you to specify the utilization of available resources for a GKE cluster. The default autoscaling profile is `balanced` and optimizes for minimizing provisioning time to include taking longer to deprovision nodes that no longer have pods that can be evicted. The `optimize-utilization` profile configures the cluster autoscaler to scale down the cluster more aggressively: it can remove more nodes, and remove nodes faster. It also configures GKE to prefer to schedule Pods in nodes that already have high utilization, helping the cluster autoscaler to identify and remove underutilized nodes. This profile will result in better performance with the CloudBees CI hibernation feature.
+- **`--enable-dataplane-v2`:**  enables Dataplane V2 for your GKE cluster. Among other features, this results in automatic enablement of Kubernetes Network policies. 
 - **`--workload-pool`:** enables Workload Identity for the initial node pool created for the cluster. We will learn more about Workload Identity in a later section.
 
 >NOTE: CloudBees CI managed controllers are configured with meta-data that does not allow them to be evicted from a node that may otherwise be able to be removed by the Cluster Autoscaler if moved to another node with capacity.
@@ -78,7 +80,6 @@ We will use `helm` to install the Nginx Ingress controller.
 First, we need to add the **ingress-nginx** helm repo (chart) so it is available to install:
 ```bsh
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-
 ```
 Next we will update all of our local charts to ensure we have the latest version:
 ```bsh
@@ -357,6 +358,3 @@ helm upgrade --install --wait cbci cloudbees/cloudbees-core \
   --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
   --values ./helm/cbci-values.yml
 ```
-
-## Provisioning Controllers in a Different Namespace
-Leveraging individual Kubernetes `namespaces` for managed controllers provides many of the same benefits as distributing you software automation workload across multiple managed controllers. It provides enhanced security and eases the management of resource utilization.

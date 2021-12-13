@@ -5,9 +5,6 @@ items:
 - kind: folder
   displayName: operations
   name: operations
-  filteredRoles:
-  - workshop-admin
-  - browse
   items:
   - kind: managedController
     displayName: ops

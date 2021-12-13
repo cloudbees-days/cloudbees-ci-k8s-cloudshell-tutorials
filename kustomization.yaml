@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- name: cbci-oc-init-groovy
+  files:
+    - config/init_groovy/09-license-activate.groovy
+- name: oc-casc-bundle
+  files:
+    - casc/oc/bundle.yaml
+    - casc/oc/jenkins.yaml
+    - casc/oc/plugins.yaml
+    - casc/oc/items.yaml
+resources:
+- k8s/cluster-issuers.yml
+- k8s/region-pd-ssd-sc.yml
+- k8s/cbci-cjoc-secret-provider.yml
+- chart.yaml
+transformers:
+  - transformers/pod-labels.yaml
+patches:
+  - path: patches/jenkins-sa-patch.yaml
+    target:
+      kind: ServiceAccount
+      name: jenkins
+
+      
