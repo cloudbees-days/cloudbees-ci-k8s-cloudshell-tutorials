@@ -149,7 +149,14 @@ helm upgrade --install --wait controller-a cloudbees/cloudbees-core \
   --values ./helm/controller-values.yml --post-renderer ./kustomize-wrapper.sh
 ```
 
-Once that completes, we will create a new managed controller in the `controller-a` `namespace` using the CloudBees CI CasC HTTP API. But first we must create an API token for your CloudBees CI `admin` user:
+Once that completes, run the following command to see all the Kubernetes resources created in the `controller-a` `namespace`:
+
+```bsh
+kubectl api-resources --verbs=list --namespaced -o name \
+  | xargs -n 1 kubectl get --show-kind --ignore-not-found -n controller-a
+```
+
+Now, we will create a new managed controller in the `controller-a` `namespace` using the CloudBees CI CasC HTTP API. But first we must create an API token for your CloudBees CI `admin` user:
 
 1. Navigate to Operations Center, ensure that you are logged in as `admin`, and click the 
 2. Back in the Google Cloud Shell paste the value of the API token to the following command:
@@ -165,5 +172,6 @@ curl --user "admin:$CJOC_ADMIN_API_TOKEN" -XPOST \
               https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/casc-items/create-items?path=/$GitHubApp \
               --data-binary @./controller-a-item.yaml -H 'Content-Type:text/yaml'
 ```
+
 
 
