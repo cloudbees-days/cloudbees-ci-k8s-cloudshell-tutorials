@@ -44,6 +44,13 @@ Let's take a look at the **patched** `jenkins` `serviceaccount`:
 kubectl get sa -n cbci jenkins -o yaml
 ```
 
+Note the `annotation` for workload identity: 
+
+```yaml
+  annotations:
+    iam.gke.io/gcp-service-account: core-cloud-run@core-workshop.iam.gserviceaccount.com
+```
+
 ## CloudBees CI RBAC
 
 By default, with `rbac` and `hibernation` enabled, the CloudBees CI Helm chart creates four `ServiceAccounts` in your CloudBees CI `Namespace` (in addition to the `default` `ServiceAccount` that is automatically created for all `Namespaces`) that you can list with the following command:
