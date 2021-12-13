@@ -211,6 +211,7 @@ helm uninstall controller-a -n controller-a
 kubectl delete ns controller-a
 helm uninstall cbci -n cbci
 kubectl delete ns cbci
+gcloud container clusters delete REPLACE_GITHUB_USER --region=us-east1 --async
 
 ```
 
