@@ -23,6 +23,19 @@ chmod +x cbci-install.sh
 ./cbci-install.sh
 ```
 
+### Installing CloudBees CI with Kustomize
+
+We saw in Module 1 how you can override certain parameters of a Helm chart by specifying them in a `values.yaml` file, as we have done in the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">`k8s/helm/cbci-values.yml`</walkthrough-editor-open-file> file. However, there will almost always be certain configuration values you want to override, configuration you want to add and/or additional Kubernetes resources you will want to create as part of a Helm install. Luckily, Helm supports a concept of **post rendering** allowing you "to use tools like kustomize to apply configuration changes without the need to fork a public chart or requiring chart maintainers to specify every last configuration option for a piece of software." If you take a look at the <walkthrough-editor-open-file filePath="cbci-install.sh">`cbci-install.sh`</walkthrough-editor-open-file> script we used to create your GKE cluster and install the CloudBees CI Helm chart (among other), you will see that we are using the <walkthrough-editor-open-file filePath="kustomize-wrapper.sh">`kustomize-wrapper.sh`</walkthrough-editor-open-file> script as a `helm` `--post-renderer`.
+
+The configuration for the `kustomize-wrapper.sh` script is found in the <walkthrough-editor-open-file filePath="kustomization.yaml">`kustomization.yaml`</walkthrough-editor-open-file> file and includes:
+
+- `configMapGenerator`: will generate the `cbci-oc-init-groovy` `configmap` containing the `init_groovy/09-license-activate.groovy` file and the `oc-casc-bundle` `configmap` that will contain all of the CJOC CasC bundle files.
+- `resources`: will create additional Kubernetes resources to include:
+  - the `letsencrypt-prod` `ClusterIssuer` for cert manager to provide a tls certificate for our CloudBees CI install.
+  - the `regional-pd-ssd` `StorageClass` which is the `StorageClass` used by CJOC and managed controllers.
+- `transformers`: will transform resources create by the `helm install`.
+- `patches`: will patch resources create by the `helm install`. It allows us to add the GKE workload identity annotation to the `jenkins` `serviceaccount`.
+
 ## CloudBees CI RBAC
 
 By default, with `rbac` and `hibernation` enabled, the CloudBees CI Helm chart creates four `ServiceAccounts` in your CloudBees CI `Namespace` (in addition to the `default` `ServiceAccount` that is automatically created for all `Namespaces`) that you can list with the following command:
@@ -73,12 +86,6 @@ helm upgrade --install --wait controller-a cloudbees/cloudbees-core \
   --set OperationsCenter.Ingress.tls.Host=$CBCI_HOSTNAME \
   --values ./helm/controllers-values.yml
 ```
-
-## Hierarchical Namespaces
-
-Before we install a managed controller into its own, unique `namespace` we are going to install Hierarchical Namespaces. Because at the end of the day, we want all of our CloudBees CI cluster's managed controllers in their own, unique `namespaces`. And while manually configuring a Kubernetes `namespace` for one managed controller, it quickly becomes a manual configuration burden when you have dozens or hundreds of managed controllers.
-
-
 
 ## Kubernetes Network Policies
 
