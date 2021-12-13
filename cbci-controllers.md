@@ -29,6 +29,8 @@ chmod +x install-cbci.sh
 
 We saw in Module 1 how you can override certain parameters of a Helm chart by specifying them in a `values.yaml` file, as we have done in the <walkthrough-editor-open-file filePath="helm/cbci-values.yml">`k8s/helm/cbci-values.yml`</walkthrough-editor-open-file> file. However, there will almost always be certain configuration values you want to override, configuration you want to add and/or additional Kubernetes resources you will want to create as part of a Helm install. Luckily, Helm supports a concept of **post rendering**, allowing you "to use tools like **Kustomize** to apply configuration changes without the need to fork a public chart or requiring chart maintainers to specify every last configuration option for a piece of software." 
 
+In addition to the ability to extend an existing Helm chart without forking or modifying the chart itself, the Helm `--post-renderer` also managed all additional Kubernetes resources as part of the same Helm `install`; so a `helm delete` will delete everything from the chart and everything added by Kustomize.
+
 If you take a look at the <walkthrough-editor-open-file filePath="install-cbci.sh">`install-cbci.sh`</walkthrough-editor-open-file> script (line 60) we used to create your GKE cluster and install the CloudBees CI Helm chart (among other charts), you will see that we are using the <walkthrough-editor-open-file filePath="kustomize-wrapper.sh">`kustomize-wrapper.sh`</walkthrough-editor-open-file> script as a `helm` `--post-renderer`.
 
 The configuration for the `kustomize-wrapper.sh` script is found in the <walkthrough-editor-open-file filePath="kustomization.yaml">`kustomization.yaml`</walkthrough-editor-open-file> file and includes:
