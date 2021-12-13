@@ -55,7 +55,51 @@ Note the `annotation` for workload identity is included on the `jenkins` `servic
     iam.gke.io/gcp-service-account: core-cloud-run@core-workshop.iam.gserviceaccount.com
 ```
 
+
+## Kubernetes Network Policies
+
+"NetworkPolicies are an application-centric construct which allow you to specify how a pod is allowed to communicate with various network "entities" (we use the word "entity" here to avoid overloading the more common terms such as "endpoints" and "services", which have specific Kubernetes connotations) over the network." By default, pods are non-isolated and they will accept traffic from any source.
+
+In a multi-tenant CloudBees CI environment on Kubernetes you may not want to allow:
+
+- agent `pods` to be accessible from the internet.
+- agent `pods` not able to access or be accessed by other agent `pods`, other managed controller `pods` and the CJOC `pod`.
+- managed controller `pods` not able to access or be accessed by other managed controller `pods`.
+- the CJOC `pod` must be able to access and be accessed by all managed controller `pods`.
+- the CJOC, hibernation and managed controller `pods` must be accessible by the `ingress-nginx` `controller`.
+
+But before we enable any specific network access we will disable all `Ingress` for the CloudBees CI `namespace` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/deny-all-ingress.yml">k8s/network-policies/deny-all-ingress.yml</walkthrough-editor-open-file> file:
+
+```bsh
+kubectl apply -f k8s/network-policies/deny-all-ingress.yml
+```
+
+After running that command try to access your Operations Center in your browser and it should fail with a **504 Gateway Time-out** fron the `ingress-nginx` `controller`. That is because the `ingress-nginx` `controller` `pod` is denied **Ingress** to the CJOC `pod`.
+
+
+So next, we will add a network policy that will allow the `ingress-nginx` `controller` to access (Ingress) any `pod` that is labelled with `networking/allow-internet-access: "true"` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/allow-ingress-nginx.yml">k8s/network-policies/allow-ingress-nginx.yml</walkthrough-editor-open-file> file (a `label` that we added to the CJOC and hibernation service `pods` with Kustomize):
+
+```bsh
+kubectl apply -f k8s/network-policies/allow-ingress-nginx.yml
+```
+
+Now try to access your Operations Center in your browser and it should load as expected.
+
+Next, navigate to the **Manage** screen for the **operations-ops** managed controller and we will see that CJOC thinks it is disconnected. We need to allow managed controllers in the CJOC `namespace` and any other managed controller `namespace` to be able to access the CJOC `pod` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/cjoc-controller-ingress.yml">k8s/network-policies/cjoc-controller-ingress.yml</walkthrough-editor-open-file> file:
+
+```bsh
+kubectl apply -f k8s/network-policies/cjoc-controller-ingress.yml
+```
+
+Finally, we need to allow CJOC to access the **operations-ops** managed controller `pod` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/controller-cjoc-ingress.yml">k8s/network-policies/controller-cjoc-ingress.yml</walkthrough-editor-open-file> file:
+
+```bsh
+kubectl apply -f k8s/network-policies/controller-cjoc-ingress.yml
+```
+
 ## CloudBees CI RBAC
+
+Before we provision a controller in its own non-CJOC `namespace` it will be useful to review the default Kubernetes RBAC configuration for a CloudBees CI install.
 
 By default, with `rbac` and `hibernation` enabled, the CloudBees CI Helm chart creates four `ServiceAccounts` in your CloudBees CI `Namespace` (in addition to the `default` `ServiceAccount` that is automatically created for all `Namespaces`) that you can list with the following command:
 
@@ -106,47 +150,6 @@ kubectl get -n cbci role cjoc-agents -o yaml
 ```
 
 There are a lot fewer Kubernetes RBAC permissions required for managed controllers than there is for CJOC.
-
-## Kubernetes Network Policies
-
-"NetworkPolicies are an application-centric construct which allow you to specify how a pod is allowed to communicate with various network "entities" (we use the word "entity" here to avoid overloading the more common terms such as "endpoints" and "services", which have specific Kubernetes connotations) over the network." By default, pods are non-isolated and they will accept traffic from any source.
-
-In a multi-tenant CloudBees CI environment on Kubernetes you may not want to allow:
-
-- agent `pods` to be accessible from the internet.
-- agent `pods` not able to access or be accessed by other agent `pods`, other managed controller `pods` and the CJOC `pod`.
-- managed controller `pods` not able to access or be accessed by other managed controller `pods`.
-- the CJOC `pod` must be able to access and be accessed by all managed controller `pods`.
-- the CJOC, hibernation and managed controller `pods` must be accessible by the `ingress-nginx` `controller`.
-
-But before we enable any specific network access we will disable all `Ingress` for the CloudBees CI `namespace` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/deny-all-ingress.yml">k8s/network-policies/deny-all-ingress.yml</walkthrough-editor-open-file> file:
-
-```bsh
-kubectl apply -f k8s/network-policies/deny-all-ingress.yml
-```
-
-After running that command try to access your Operations Center in your browser and it should fail with a **504 Gateway Time-out** fron the `ingress-nginx` `controller`. That is because the `ingress-nginx` `controller` `pod` is denied **Ingress** to the CJOC `pod`.
-
-
-So next, we will add a network policy that will allow the `ingress-nginx` `controller` to access (Ingress) any `pod` that is labelled with `networking/allow-internet-access: "true"` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/allow-ingress-nginx.yml">k8s/network-policies/allow-ingress-nginx.yml</walkthrough-editor-open-file> file (a `label` that we added to the CJOC and hibernation service `pods` with Kustomize):
-
-```bsh
-kubectl apply -f k8s/network-policies/allow-ingress-nginx.yml
-```
-
-Now try to access your Operations Center in your browser and it should load as expected.
-
-Next, navigate to the **Manage** screen for the **operations-ops** managed controller and we will see that CJOC thinks it is disconnected. We need to allow managed controllers in the CJOC `namespace` and any other managed controller `namespace` to be able to access the CJOC `pod` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/cjoc-controller-ingress.yml">k8s/network-policies/cjoc-controller-ingress.yml</walkthrough-editor-open-file> file:
-
-```bsh
-kubectl apply -f k8s/network-policies/cjoc-controller-ingress.yml
-```
-
-Finally, we need to allow CJOC to access the **operations-ops** managed controller `pod` by applying the policy defined in the <walkthrough-editor-open-file filePath="k8s/network-policies/controller-cjoc-ingress.yml">k8s/network-policies/controller-cjoc-ingress.yml</walkthrough-editor-open-file> file:
-
-```bsh
-kubectl apply -f k8s/network-policies/controller-cjoc-ingress.yml
-```
 
 ## Create a Managed Controller Namespace and RBAC Configuration with Helm
 
