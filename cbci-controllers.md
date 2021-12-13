@@ -12,6 +12,17 @@ However, before we start provisioning controllers in `Namespaces` we review the 
 
 <walkthrough-tutorial-duration duration="100"></walkthrough-tutorial-duration>
 
+## Create Cluster and Install CloudBees CI
+
+If you already have a GKE cluster with CloudBees CI (and supporting tools) installed, then proceed to the next lesson.
+
+If you are starting with this module then you will need to create a GKE cluster and install CloudBees CI (with supporting tools) with the following command:
+
+```bsh
+chmod +x cbci-install.sh
+./cbci-install.sh
+```
+
 ## CloudBees CI RBAC
 
 By default, with `rbac` and `hibernation` enabled, the CloudBees CI Helm chart creates four `ServiceAccounts` in your CloudBees CI `Namespace` (in addition to the `default` `ServiceAccount` that is automatically created for all `Namespaces`) that you can list with the following command:

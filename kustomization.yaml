@@ -3,7 +3,7 @@ kind: Kustomization
 configMapGenerator:
 - name: cbci-oc-init-groovy
   files:
-    - config/init_groovy/09-license-activate.groovy
+    - init_groovy/09-license-activate.groovy
 - name: oc-casc-bundle
   files:
     - casc/oc/bundle.yaml
@@ -12,7 +12,7 @@ configMapGenerator:
     - casc/oc/items.yaml
 resources:
 - k8s/cluster-issuers.yml
-- k8s/region-pd-ssd-sc.yml
+- k8s/regional-pd-ssd-sc.yml
 - k8s/cbci-cjoc-secret-provider.yml
 - chart.yaml
 transformers:
@@ -23,4 +23,4 @@ patches:
       kind: ServiceAccount
       name: jenkins
 
-      
+
