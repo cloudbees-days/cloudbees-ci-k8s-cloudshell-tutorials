@@ -32,7 +32,7 @@ OperationsCenter:
   # Operations Center docker image
   Image:
     # OperationsCenter.Image.dockerImage -- Container image to use for Operations Center
-    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/core-oc:2.319.1.5
+    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/core-oc:2.361.2.1
 
     # Configuration as Code (CasC) for Operations Center.
   CasC:
@@ -228,7 +228,7 @@ Master:
   # Docker image inserted in Operations Center automatically
   Image:
     # Master.Image.dockerImage -- Used to override the default docker image
-    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/core-mm:2.319.1.5
+    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/core-mm:2.361.2.1
   # Master.JavaOpts -- Additional Java options to pass to managed masters. For example, setting up a JMX port
   JavaOpts: 
     -Duser.timezone="America/New_York"
@@ -244,7 +244,7 @@ Agents:
   Enabled: true
   Image:
     # Agents.Image.dockerImage -- Used to override the default docker image used for agents
-    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/agent:2.319.1.5
+    dockerImage: gcr.io/cloudbees-ops-gcr/ubi/unified-distribution/agent:2.361.2.1
 
 
 Persistence:

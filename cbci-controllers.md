@@ -2,7 +2,7 @@
 
 ## Overview
 
-In this tutorial you will learn how to provision managed controllers in controller specific, non-CJOC Kubernetes, `Namespaces` and how to use Kubernetes network policies to isolate different CloudBees CI `pods` for a mult-tenant environment. Kubernetes `Namespaces` allow you to partition a Kubernetes cluster based on non-Kubernetes specific groups - such as team, business unit, product, location, cost center, etc. 
+In this tutorial you will learn how to provision managed controllers in controller specific, non-CJOC Kubernetes, `Namespaces` and how to use Kubernetes network policies to isolate different CloudBees CI `pods` for a mult-tenant environment. Kubernetes `Namespaces` allow you to partition and manage resources of a Kubernetes cluster based on non-Kubernetes specific groups - such as team, business unit, product, location, cost center, etc. 
 
 The official Kubernetes documentation description of `Namespaces`:
 
@@ -104,7 +104,7 @@ Finally, we need to allow CJOC to access the **operations-ops** managed controll
 kubectl apply -f k8s/network-policies/controller-cjoc-ingress.yml
 ```
 
-## CloudBees CI RBAC
+## Kubernetes RBAC for CloudBees CI
 
 Before we provision a controller in its own non-CJOC `namespace` it will be useful to review the default Kubernetes RBAC configuration for a CloudBees CI install.
 

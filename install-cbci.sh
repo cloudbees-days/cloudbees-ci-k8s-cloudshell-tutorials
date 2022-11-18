@@ -4,7 +4,7 @@ gcloud container clusters create "REPLACE_GITHUB_USER" \
     --region "us-east1" \
     --node-locations "us-east1-b","us-east1-c" \
     --num-nodes=1 \
-    --cluster-version "1.21.5-gke.1302" --release-channel "regular" \
+    --release-channel "regular" \
     --machine-type "n1-standard-4" \
     --disk-type "pd-ssd" --disk-size "50" \
     --service-account "gke-nodes-for-workshop-testing@REPLACE_GCP_PROJECT.iam.gserviceaccount.com" \
@@ -24,8 +24,10 @@ helm upgrade --install --wait ingress-nginx ingress-nginx/ingress-nginx \
     -n ingress-nginx --create-namespace
 
 helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
-  --version v1.5.4 \
+  --version v1.7.2 \
   --set global.leaderElection.namespace=cert-manager  --set prometheus.enabled=false \
+  --set extraArgs={--issuer-ambient-credentials=true} \
+  --set serviceAccount.annotations."iam\.gke\.io/gcp-service-account"="dns01-solver@REPLACE_GCP_PROJECT.iam.gserviceaccount.com" \
   --set installCRDs=true --wait
 
 helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system
