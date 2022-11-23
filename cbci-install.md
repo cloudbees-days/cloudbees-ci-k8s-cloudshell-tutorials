@@ -26,7 +26,7 @@ gcloud container clusters create "REPLACE_GITHUB_USER" \
     --region "us-east1" \
     --node-locations "us-east1-b","us-east1-c" \
     --num-nodes=1 \
-    --cluster-version "1.21.5-gke.1302" --release-channel "regular" \
+    --release-channel "regular" \
     --machine-type "n1-standard-4" \
     --disk-type "pd-ssd" --disk-size "50" \
     --service-account "gke-nodes-for-workshop-testing@core-workshop.iam.gserviceaccount.com" \
@@ -40,7 +40,7 @@ The flags we are setting are:
 - **`--region`** - This is required to create a regional GKE cluster. To create a zonal cluster you would use the `--zone` flag. The value is set to `us-east1` to comply with CloudBees Ops rules.
 - **`--node-locations`** - Specifies the zone(s) where the worker nodes will run. If not specified then they are spread across 3 random zones within the cluster region (for regional clusters). We have specified two zones for use with GCP regional persistent disks, because GCP regional disks are only replicated across two zones.
 - **`--num-nodes`** - The number of nodes we want initially in each of the cluster's zones. In this case we are defining two zones for the cluster nodes so there will be 2 total nodes across the entire cluster.
-- **`--cluster-version` and `--release-channel`** - We have specified this flag as we would like to use a non-default GKE version from the **regular** release channel. By using a version later than `1.21.0-gke.1500`, we pick up a number of changes to the default values for flags to include using VPC-native as the default network mode.
+- **`--release-channel`** - We have specified this flag as we would like to use a non-default GKE version from the **regular** release channel. By using a version later than `1.21.0-gke.1500`, we pick up a number of changes to the default values for flags to include using VPC-native as the default network mode.
 - **`--machine-type`** - The default machine type is an **e2-medium** that has not been as stable for running CloudBees CI workloads as the **n1** machines have been.
 - **`--disk-type` and `--disk-size`** - The defaults are too large (100gb) and slower that the one we are specifying.
 - **`--service-account`** - Required to pull the pre-release container images we are using for CloudBees CI from an Ops managed GCR.
@@ -73,7 +73,7 @@ There are two supporting Kubernetes services that we will install before install
 
 ### Ingress
 
-CloudBees requires that you use the Nginx Ingress controller to provide routes or Ingresses to the CloudBees CI controllers running as Kubernetes services. 
+We will be using the Nginx Ingress controller to provide routes or Ingresses to the CloudBees CI controllers running as Kubernetes services. 
 
 We will use `helm` to install the Nginx Ingress controller.
 
@@ -103,15 +103,17 @@ Note that the `ingress-nginx-controller` has an `EXTERNAL-IP`.
 
 ### TLS for HTTPS
 
-Of course we want web traffic to our CloudBees CI cluster to be secure. However, creating, managing and updating TLS certificates is a lot of work. That is why we will use the cert-manager Kubernetes add-on to automatically issue an X.509 certificate from Lets Encrypt (a non-profit, free, automated, and open certificate authority (CA)) and store it as a Kubernetes **Secret** in your GKE cluster.
+Of course we want web traffic to our CloudBees CI cluster to be secure. However, creating, managing and updating TLS certificates is extra work we would like to avoid. That is why we will use the cert-manager Kubernetes add-on to automatically issue an X.509 certificate from Lets Encrypt (a non-profit, free, automated, and open certificate authority (CA)) and store it as a Kubernetes **Secret** in your GKE cluster.
 
 We will use `helm` to install the cert-manager add-on:
 ```bsh
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
 helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
-  --version v1.5.4 \
+  --version v1.7.2 \
   --set global.leaderElection.namespace=cert-manager  --set prometheus.enabled=false \
+  --set extraArgs={--issuer-ambient-credentials=true} \
+  --set serviceAccount.annotations."iam\.gke\.io/gcp-service-account"="dns01-solver@REPLACE_GCP_PROJECT.iam.gserviceaccount.com" \
   --set installCRDs=true --wait
 ```
 - **`--set`:** The various `--set` parameters are used to override the default values of different variables in the helm chart. You may also pass those values as a yaml file with the `--values` or `-f` parameters as we will see with CloudBees CI. The **`installCRDs=true`** value installs the cert-manager **CustomResourceDefinitions** (Kubernetes objects that allow you to extend Kubernetes with custom features) that we will interact with next.
@@ -293,7 +295,7 @@ helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver
 Next, will install the Google Secret Manager provider for the Secret Store CSI Driver:
 ```bsh
 git clone https://github.com/GoogleCloudPlatform/secrets-store-csi-driver-provider-gcp.git
-kubectl apply -f secrets-store-csi-driver-provider-gcp/deploy/provider-gcp-plugin.yaml
+kubectl apply -f ./secrets-store-csi-driver-provider-gcp/deploy/provider-gcp-plugin.yaml
 ```
 
 Now that we have Secrets Store CSI driver and the Google Secret Manager provider installed we can <walkthrough-editor-open-file filePath="k8s/cbci-cjoc-secret-provider.yml">create a `SecretProviderClass`</walkthrough-editor-open-file> (another CRD, provided by the Secret Store CSI Driver) to use with the `cjoc Pod`:
